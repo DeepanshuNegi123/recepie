@@ -6,19 +6,29 @@ const {
   updateRecipe,
   deleteRecipe,
   searchRecipes,
-  toggleFavorite
+  toggleFavorite,
+  myKitchen
 } = require('../controllers/receipecontrol');
+
 const Upload = require('../middlewares/uploadmiddlewares');
+const { authenticateUser } = require('../middlewares/authmiddleware'); // ✅ ADDED
 
 const router = express.Router();
 
+// ✅ ADDED: Protect all routes with authentication
+router.use(authenticateUser);
+
+// Main routes
 router.route('/')
   .get(getRecipes)
-  .post(Upload.single('image'), createRecipe);
+  .post(createRecipe);
 
+// Specific routes
 router.route('/search').get(searchRecipes);
+router.route('/mykitchen').get(myKitchen);
 router.route('/:id/favorite').put(toggleFavorite);
 
+// Recipe by ID
 router.route('/:id')
   .get(getRecipe)
   .put(Upload.single('image'), updateRecipe)

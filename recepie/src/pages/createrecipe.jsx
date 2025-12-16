@@ -6,18 +6,9 @@ import { createRecipe } from '../services/recipeservices';
 import { uploadImage } from '../services/imageservice';
 import { BackButton } from '../components/UI/back';
 
-const CreateRecipe = () => {  // functional component
+const CreateRecipe = () => {
+  const navigate = useNavigate();
 
-
-
-  const navigate = useNavigate(); // navigate after sucess
-
-
-  // under we have state management 
-
-  // under we have a usestate hook that return two array having current and update state 
-  // setFormData is used to update the state
-  // formadata is the current state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -31,216 +22,276 @@ const CreateRecipe = () => {  // functional component
     tags: ''
   });
 
-
-
-// another usestate hook to track form submission
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-
-// under we have a function for handle change 
-
-  const handleChange = (e) => {  // e event object  
-
-
-    const { name, value } = e.target; // destructuring the eventto get  the chnage in user name and value 
-   
-    
-    // under we have a function setform data to change the sate of form data but while keeping the previous data
-    // prev previous form data state
-    // ...prev spread operator to copy existing data 
-    // [name]: value here name is the key and value is the value
+  const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-
-  // under we have a function to handle image change  
-
-  // e.target.files[0] to get the first file
-  // updates image property
-
+  
   const handleImageChange = (e) => {
-
     setFormData(prev => ({ ...prev, image: e.target.files[0] }));
   };
 
-  // under we have a function to handle submit
 
   const handleSubmit = async (e) => {
-    
-    e.preventDefault(); // prevent page refresh 
-    
-    
-    setIsSubmitting(true); // loading state is set to true
+    e.preventDefault();
+    setIsSubmitting(true);
     
     try {
       let imageUrl = '';
-      if (formData.image) { // check if user has uploaded an image
-        const imageData = await uploadImage(formData.image); // upload image to server 
-        imageUrl = imageData.url; // extract image url from response
+      if (formData.image) {
+        const imageData = await uploadImage(formData.image);
+        imageUrl = imageData.url;
       }
 
 
-
-      // under we have a recipe data object
-
       const recipeData = {
-        ...formData,
+
+        title: formData.title,
+        description: formData.description,
         imageUrl,
         ingredients: formData.ingredients.filter(ing => ing.name.trim() !== ''),
-        steps: formData.steps.filter(step => step.trim() !== '')
+        steps: formData.steps.filter(step => step.trim() !== ''),
+        prepTime: Number(formData.prepTime),
+        cookTime: Number(formData.cookTime),
+        servings: Number(formData.servings),
+        difficulty: formData.difficulty,
+        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : []
+        
       };
 
-      console.log(recipeData);
+      console.log('Sending recipe data:', recipeData);
 
-
-      // here we are sending the recipe data to server 
       await createRecipe(recipeData);
-        await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
-        navigate('/mykitchen');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      navigate('/mykitchen');
       
     } catch (err) {
-      console.error(err);
+      console.error('Error creating recipe:', err);
+      alert('Failed to create recipe. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-
-
   return (
-    <>
-    <BackButton  className='' text='Back'/>
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Create New Recipe</h1>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50">
+      <BackButton className='ml-4 mt-4' text='Back'/>
       
-      <form onSubmit={handleSubmit} className="space-y-6" encType='multipart/form-data'>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-gray-700 mb-2">Recipe Title*</label>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="mb-8 animate-fade-in">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent mb-2">
+            Create New Recipe
+          </h1>
+          <p className="text-gray-600">Share your culinary masterpiece with the world</p>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Title and Image Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 animate-slide-up">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="group">
+                <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                  <span className="text-orange-500">📝</span> Recipe Title*
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
+                  required
+                  placeholder="Enter a delicious title..."
+                />
+              </div>
+              
+              <div className="group">
+                <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                  <span className="text-orange-500">📷</span> Recipe Image*
+                </label>
+                <input 
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all duration-200 hover:border-orange-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-100 file:text-orange-700 file:cursor-pointer hover:file:bg-orange-200"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Description Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.1s'}}>
+            <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+              <span className="text-orange-500">✍️</span> Description
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows="3"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300 resize-none"
+              placeholder="Tell us about your recipe..."
+            />
+          </div>
+          
+          {/* Ingredients Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.2s'}}>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">🥗</span>
+              <h2 className="text-xl font-semibold text-gray-800">Ingredients</h2>
+            </div>
+            <IngredientInput 
+              ingredients={formData.ingredients} 
+              setFormData={setFormData} 
+            />
+          </div>
+          
+          {/* Steps Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.3s'}}>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">👨‍🍳</span>
+              <h2 className="text-xl font-semibold text-gray-800">Cooking Steps</h2>
+            </div>
+            <StepInput 
+              steps={formData.steps} 
+              setFormData={setFormData} 
+            />
+          </div>
+          
+          {/* Time and Details Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.4s'}}>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">⏱️</span>
+              <h2 className="text-xl font-semibold text-gray-800">Recipe Details</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="group">
+                <label className="block text-gray-700 font-medium mb-2">Prep Time (min)</label>
+                <input
+                  type="number"
+                  name="prepTime"
+                  value={formData.prepTime}
+                  onChange={handleChange}
+                  min="0"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
+                />
+              </div>
+              
+              <div className="group">
+                <label className="block text-gray-700 font-medium mb-2">Cook Time (min)</label>
+                <input
+                  type="number"
+                  name="cookTime"
+                  value={formData.cookTime}
+                  onChange={handleChange}
+                  min="0"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
+                />
+              </div>
+              
+              <div className="group">
+                <label className="block text-gray-700 font-medium mb-2">Servings</label>
+                <input
+                  type="number"
+                  name="servings"
+                  value={formData.servings}
+                  onChange={handleChange}
+                  min="1"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
+                />
+              </div>
+              
+              <div className="group">
+                <label className="block text-gray-700 font-medium mb-2">Difficulty</label>
+                <select
+                  name="difficulty"
+                  value={formData.difficulty}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300 bg-white cursor-pointer"
+                >
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          {/* Tags Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.5s'}}>
+            <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+              <span className="text-orange-500">🏷️</span> Tags (comma separated)
+            </label>
             <input
               type="text"
-              name="title"
-              value={formData.title}
+              name="tags"
+              value={formData.tags}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-              required
+              placeholder="e.g. vegetarian, italian, quick"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
             />
           </div>
           
-
-          <div>
-            <label className="block text-gray-700 mb-2">Recipe Image*</label>
-            <input 
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-
-        </div>
-        
-        <div>
-          <label className="block text-gray-700 mb-2">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows="3"
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-          />
-        </div>
-        
-        <IngredientInput 
-          ingredients={formData.ingredients} 
-          setFormData={setFormData} 
-        />
-        
-        <StepInput 
-          steps={formData.steps} 
-          setFormData={setFormData} 
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-gray-700 mb-2">Prep Time (min)</label>
-            <input
-              type="number"
-              name="prepTime"
-              value={formData.prepTime}
-              onChange={handleChange}
-              min="0"
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-gray-700 mb-2">Cook Time (min)</label>
-            
-            <input
-              type="number"
-              name="cookTime"
-              value={formData.cookTime}
-              onChange={handleChange}
-              min="0"
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-            
-          </div>
-          
-          <div>
-            <label className="block text-gray-700 mb-2">Servings</label>
-            <input
-              type="number"
-              name="servings"
-              value={formData.servings}
-              onChange={handleChange}
-              min="1"
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-gray-700 mb-2">Difficulty</label>
-            <select
-              name="difficulty"
-              value={formData.difficulty}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg"
+          {/* Submit Button */}
+          <div className="flex justify-end animate-slide-up" style={{animationDelay: '0.6s'}}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-yellow-600 focus:outline-none focus:ring-4 focus:ring-orange-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                  </svg>
+                  Creating...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <span>Create Recipe</span>
+                  <span>🚀</span>
+                </span>
+              )}
+            </button>
           </div>
-        </div>
-        
-        <div>
-          <label className="block text-gray-700 mb-2">Tags (comma separated)</label>
-          <input
-            type="text"
-            name="tags"
-            value={formData.tags}
-            onChange={handleChange}
-            placeholder="e.g. vegetarian, italian, quick"
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-          />
-        </div>
-        
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isSubmitting ? 'Creating...' : 'Create Recipe'}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+
+        .animate-slide-up {
+          animation: slide-up 0.6s ease-out backwards;
+        }
+      `}</style>
     </div>
-    </>
   );
 };
 

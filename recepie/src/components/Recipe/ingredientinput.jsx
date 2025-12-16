@@ -14,6 +14,8 @@ const IngredientInput = ({ ingredients, setFormData }) => {
     }));
   };
 
+
+
   const removeIngredient = (index) => {
     setFormData(prev => ({
       ...prev,
@@ -21,10 +23,14 @@ const IngredientInput = ({ ingredients, setFormData }) => {
     }));
   };
 
+
   return (
+
     <div className="mb-6">
       <label className="block text-gray-700 mb-2">Ingredients*</label>
+
       {ingredients.map((ingredient, index) => (
+
         <div key={index} className="grid grid-cols-12 gap-2 mb-2">
           <div className="col-span-5">
             <input
@@ -35,7 +41,9 @@ const IngredientInput = ({ ingredients, setFormData }) => {
               className="w-full px-3 py-2 border rounded"
               required
             />
+
           </div>
+
           <div className="col-span-3">
             <input
               type="text"

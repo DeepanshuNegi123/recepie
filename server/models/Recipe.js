@@ -6,32 +6,76 @@ const recipeSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  description: { type: String, trim: true },
-  imageUrl: { type: String },
+
+  description: { 
+    type: String, 
+    trim: true 
+  },
+  
+  imageUrl: { 
+    type: String 
+  },
+
   ingredients: [{
-    name: { type: String, trim: true },
-    amount: { type: mongoose.Schema.Types.Mixed, trim: true },
-    unit: { type: Number, trim: true }
+    name: { 
+      type: String, 
+      required: true,
+      trim: true 
+    },
+    amount: { 
+      type: String,  // Changed from Mixed to String
+      trim: true 
+    },
+    unit: { 
+      type: String,  // Changed from Number to String
+      trim: true 
+    }
   }],
+
   steps: [{
     type: String,
+    required: true,
     trim: true
   }],
-  preptime: { type: Number, trim: true },
-  cooktime: { type: Number, trim: true },
-  servings: { type: Number, trim: true },
-  difficulty: { type: String, enum: ['Easy', 'Medium', 'Hard'] },
-  tags: [String],
-  author: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+
+  prepTime: {  // Changed from preptime to prepTime
+    type: Number, 
+    default: 0 
   },
-  favourites: [{
+  
+  cookTime: {  // Changed from cooktime to cookTime
+    type: Number, 
+    default: 0 
+  },
+  
+  servings: { 
+    type: Number, 
+    default: 1 
+  },
+  
+  difficulty: { 
+    type: String, 
+    enum: ['Easy', 'Medium', 'Hard'],
+    default: 'Easy'
+  },
+  
+  tags: [String],
+
+  author: {  // Made optional for now
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+    // Removed required: true temporarily
+  },
+
+  favorites: [{  // Changed from favourites to favorites
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-  createdAt: { type: Date, default: Date.now }
+  
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  }
 });
 
 const Recipe = mongoose.model('Recipe', recipeSchema);

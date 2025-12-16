@@ -1,6 +1,3 @@
-
-
-
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -14,8 +11,6 @@ const userSchema = new mongoose.Schema({
 
   email: {
     type: String,
-
-
     required: true,
     unique: true,
     trim: true,
@@ -32,13 +27,10 @@ const userSchema = new mongoose.Schema({
     ref: 'Recipe'
   }],
 
-
   createdAt: {
     type: Date,
     default: Date.now
   }
-
-
 });
 
 // Hash password before saving
@@ -48,7 +40,6 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
-// Changed from 'Userrecepie' to 'User'
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model('Userrecepie', userSchema);
 
-module.exports = User;
+

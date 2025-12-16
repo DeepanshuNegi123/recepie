@@ -1,11 +1,12 @@
 // server.js (CommonJS version)
 
 require('dotenv').config(); // If using .env variables
-const express = require('express');
+// const express = require('express');
 const mongoose = require('mongoose');
 const app = require('./app'); // Your Express app config
 
 const PORT = process.env.PORT || 5003;
+
 
 const dbconnection = async () => {
   try {
