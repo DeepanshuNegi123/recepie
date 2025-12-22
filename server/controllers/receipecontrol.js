@@ -49,39 +49,59 @@ catch (error) {
 
 const createRecipe = async (req, res) => {
   try {
-    console.log('Received body:', req.body);
-    console.log('User from token:', req.user); // Added for debugging
-    
-    const { title, description, ingredients, steps, prepTime, cookTime, servings, difficulty, tags, imageUrl } = req.body;
-    
-    // Validate required fields
-    if (!title || !ingredients || !steps) {
-      return res.status(400).json({ error: 'Title, ingredients, and steps are required' });
+    console.log("REQ.BODY:", req.body);
+    console.log("REQ.FILE:", req.file);
+    console.log("REQ.USER:", req.user);
+
+    const {
+      title,
+      description,
+      prepTime,
+      cookTime,
+      servings,
+      difficulty
+    } = req.body;
+
+    // Parse JSON strings from FormData
+    const ingredients = JSON.parse(req.body.ingredients || "[]");
+    const steps = JSON.parse(req.body.steps || "[]");
+    const tags = JSON.parse(req.body.tags || "[]");
+
+    // Validation
+    if (!title || ingredients.length === 0 || steps.length === 0) {
+      return res.status(400).json({
+        error: "Title, ingredients, and steps are required"
+      });
     }
 
     const newRecipe = new Recipe({
       title,
-      description: description || '',
-      imageUrl: imageUrl || '',
-      ingredients: ingredients,
-      steps: steps,
+      description: description || "",
+      imageUrl: req.file ? req.file.path : "", // ✅ Cloudinary URL
+      ingredients,
+      steps,
       prepTime: Number(prepTime) || 0,
       cookTime: Number(cookTime) || 0,
       servings: Number(servings) || 1,
-      difficulty: difficulty || 'Easy',
-      tags: Array.isArray(tags) ? tags : [],
-      author: req.user.id  // ✅ ADDED: Link recipe to logged-in user
+      difficulty: difficulty || "Easy",
+      tags,
+      author: req.user.id
     });
 
     await newRecipe.save();
-    console.log('Recipe created successfully:', newRecipe._id);
-    res.status(201).json(newRecipe);
-    
+
+    res.status(201).json({
+      success: true,
+      recipe: newRecipe
+    });
+
   } catch (err) {
-    console.error('Create recipe error:', err);
+    console.error("Create recipe error:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
+
 
 const getRecipes = async (req, res) => {
   try {

@@ -41,26 +41,46 @@ const CreateRecipe = () => {
     
     try {
       let imageUrl = '';
-      if (formData.image) {
-        const imageData = await uploadImage(formData.image);
-        imageUrl = imageData.url;
-      }
+    
 
 
-      const recipeData = {
+  const recipeData = new FormData();
 
-        title: formData.title,
-        description: formData.description,
-        imageUrl,
-        ingredients: formData.ingredients.filter(ing => ing.name.trim() !== ''),
-        steps: formData.steps.filter(step => step.trim() !== ''),
-        prepTime: Number(formData.prepTime),
-        cookTime: Number(formData.cookTime),
-        servings: Number(formData.servings),
-        difficulty: formData.difficulty,
-        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : []
-        
-      };
+    recipeData.append("title", formData.title);
+recipeData.append("description", formData.description);
+
+recipeData.append(
+  "ingredients",
+  JSON.stringify(
+    formData.ingredients.filter(ing => ing.name.trim() !== "")
+  )
+);
+
+recipeData.append(
+  "steps",
+  JSON.stringify(
+    formData.steps.filter(step => step.trim() !== "")
+  )
+);
+
+recipeData.append("prepTime", Number(formData.prepTime));
+recipeData.append("cookTime", Number(formData.cookTime));
+recipeData.append("servings", Number(formData.servings));
+recipeData.append("difficulty", formData.difficulty);
+
+recipeData.append(
+  "tags",
+  JSON.stringify(
+    formData.tags
+      ? formData.tags.split(",").map(tag => tag.trim())
+      : []
+  )
+);
+
+
+if (formData.image) {
+  recipeData.append("image", formData.image);
+}
 
       console.log('Sending recipe data:', recipeData);
 

@@ -3,6 +3,10 @@ const host = 'http://localhost:5003';
 
 
 
+export const getAuthHeadersForFormData = () => ({
+  Authorization: `Bearer ${localStorage.getItem("token")}`
+});
+
 // ✅ Helper function with debugging
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -104,36 +108,35 @@ export const fetchRecipe = async (id) => {
 
 
 
-// ✅ Create recipe
+// Create recipe
 export const createRecipe = async (recipeData) => {
-  
   try {
+    console.log(' Creating recipe...', recipeData);
 
-    console.log('📡 Creating recipe...', recipeData);
-    
     const response = await fetch(`${host}/recipes`, {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(recipeData)
+      headers: getAuthHeadersForFormData(), 
+      body: recipeData                    
     });
 
     console.log('🔍 Response status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('❌ Server error:', errorData);
+      console.error(' Server error:', errorData);
       throw new Error(errorData.error || `Server error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('✅ Recipe created successfully:', data);
+    console.log(' Recipe created successfully:', data);
     return data;
 
   } catch (error) {
-    console.error('❌ Error creating recipe:', error);
+    console.error(' Error creating recipe:', error);
     throw error;
   }
 };
+
 
 
 

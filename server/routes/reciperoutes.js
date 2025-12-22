@@ -1,5 +1,8 @@
+
+
 const express = require('express');
 const {
+  
   createRecipe,
   getRecipes,
   getRecipe,
@@ -8,20 +11,20 @@ const {
   searchRecipes,
   toggleFavorite,
   myKitchen
+
 } = require('../controllers/receipecontrol');
 
 const Upload = require('../middlewares/uploadmiddlewares');
-const { authenticateUser } = require('../middlewares/authmiddleware'); // ✅ ADDED
+const { authenticateUser } = require('../middlewares/authmiddleware'); 
 
 const router = express.Router();
 
-// ✅ ADDED: Protect all routes with authentication
 router.use(authenticateUser);
 
 // Main routes
 router.route('/')
   .get(getRecipes)
-  .post(createRecipe);
+  .post(Upload.single('image'), createRecipe);
 
 // Specific routes
 router.route('/search').get(searchRecipes);

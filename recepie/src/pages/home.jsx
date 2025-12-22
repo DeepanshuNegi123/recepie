@@ -97,7 +97,7 @@ const Home = () => {
           }
           endMessage={
             <div className="text-center py-12 animate-fade-in">
-              <span className="text-5xl block mb-3">🎉</span>
+              <span className="text-5xl block mb-3"></span>
               <p className="text-gray-600 text-lg font-medium">
                 You've seen all recipes!
               </p>

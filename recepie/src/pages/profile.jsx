@@ -45,7 +45,7 @@ const ProfilePage = () => {
     name: "Johnson", // ✅ WORKING: Updated from auth API
     username: "@johnson_cooks", // 🔴 NEEDS: Fetch from backend
     bio: "🔥 Food enthusiast | 🥘 Recipe Creator | 🌱 Healthy Living Advocate\nSharing delicious recipes from around the world!", // 🔴 NEEDS: Fetch from backend
-    location: "San Francisco, CA", // 🔴 NEEDS: Fetch from backend
+
     joinedDate: "January 2023", // 🔴 NEEDS: Fetch from backend
     recipes: 42, // 🔴 NEEDS: Calculate from myRecipes.length
     saved: 127, // 🔴 NEEDS: Calculate from savedRecipes.length
@@ -179,9 +179,9 @@ const ProfilePage = () => {
 
   const [notifications, setNotifications] = useState([
     // MOCK DATA - Replace with real API data
-    { text: "Sarah liked your Carbonara recipe", time: "2m ago", type: "like" },
-    { text: "New follower: Mike Chen", time: "1h ago", type: "follow" },
-    { text: "Your recipe was featured!", time: "3h ago", type: "feature" }
+    // { text: "Sarah liked your Carbonara recipe", time: "2m ago", type: "like" },
+    // { text: "New follower: Mike Chen", time: "1h ago", type: "follow" },
+    // { text: "Your recipe was featured!", time: "3h ago", type: "feature" }
   ]);
 
 
