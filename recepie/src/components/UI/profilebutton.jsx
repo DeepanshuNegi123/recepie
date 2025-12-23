@@ -19,9 +19,9 @@ const ProfileButton = ()=>{
   onClick={handlecheck}
   className="flex items-center mr-4 focus:outline-none">
   <img 
-    src="vite.svg" 
+    src="chef.jpg" 
     alt="logo" 
-    className="border-2 rounded-full h-12 w-12 hover:border-gray-300 transition-all"
+    className=" rounded-full h-14 w-20 hover:border-2 border-gray-300 transition-all"
   />
  </button>
     )
