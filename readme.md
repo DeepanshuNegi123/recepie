@@ -743,3 +743,7 @@ For questions or support, please reach out or open an issue on GitHub.
 ---
 
 **Happy Cooking! 🍳**
+
+
+# cloudinary
+Cloudinary is a cloud-based, API-first media management platform that helps developers automate the entire lifecycle of images and videos for web/mobile apps
