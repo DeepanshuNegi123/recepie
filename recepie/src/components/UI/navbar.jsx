@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { HomeIcon, BookOpenIcon, HeartIcon, PlusIcon } from '@heroicons/react/24/outline';
 import ProfileButton from './profilebutton';
+import Globe from './globe';
+
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -9,20 +11,29 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
-        <div className="flex justify-between h-16">
+      
+<div className="flex justify-between h-16">
 
+<div className='leftside flex flex  items-center '>
+
+
+{/*   globe */}
+  <div className='flex flex-row  items-center'>
+    
+    <Link to='/globalera' > <Globe /></Link>
+        
+  </div>
+       
 
           {/* Logo */}
           <div className="flex items-center">
-          
                <ProfileButton />
-
-            <Link to="/" className="flex items-center ml-2">
+            <Link to="/" className="flex items-center ml-0">
               <span className="text-yellow-600 font-bold text-xl">RecipeBook</span>
             </Link>
-
-            
           </div>
+          </div>
+
 
 
 
@@ -160,7 +171,7 @@ const Navbar = () => {
           </div>
         </div>
       )}
-    </nav>
+     </nav>
   );
 };
 
