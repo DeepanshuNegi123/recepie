@@ -17,11 +17,11 @@ const ProfileButton = ()=>{
     return(
   <button 
   onClick={handlecheck}
-  className="flex items-center mr-4 focus:outline-none">
+  className="flex items-center mr-4 ">
   <img 
     src="chef.jpg" 
     alt="logo" 
-    className=" rounded-full h-14 w-20 hover:border-2 border-gray-300 transition-all"
+    className=" p-0 rounded-full h-14 w-18 "
   />
  </button>
     )

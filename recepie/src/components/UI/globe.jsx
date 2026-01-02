@@ -3,7 +3,6 @@ import { GlobeAltIcon } from "@heroicons/react/24/outline";
 
 const Globe  = ()=>{
 
-
 return(
 
 <div className="p-0 m-0">
