@@ -2,18 +2,17 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-import Home from "./pages/home";
-import RecipePage from "./pages/recipepage";
-import CreateRecipe from "./pages/createrecipe";
-import MyKitchen from "./pages/mykitchen";
-import Favorites from "./pages/favourites";
-import Navbar from "./components/UI/navbar";
-import Footer from "./components/UI/footer";
-import Register from "./pages/register";
-import Login from "./pages/login";
-import Profile from "./pages/profile";
-import Loading from "./components/UI/loading";
-
+import Home from "./pages/Recepie/home";
+import RecipePage from "./pages/Recepie/recipepage";
+import CreateRecipe from "./pages/Recepie/createrecipe";
+import MyKitchen from "./pages/Recepie/mykitchen";
+import Favorites from "./pages/Recepie/favourites";
+import Navbar from "./components/Common/navbar";
+import Register from "./pages/Auth/register";
+import Login from "./pages/Auth/login";
+import Profile from "./pages/Profile/profile";
+import Loading from "./components/Common/loading";
+import GlobalChat from "./pages/Chat/globalchat";
 function App() {
   const [loading, setLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
@@ -61,6 +60,7 @@ function App() {
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path='/globalchat' element={<GlobalChat/>} />
             </Routes>
           </main>
           {/* <Footer /> */}

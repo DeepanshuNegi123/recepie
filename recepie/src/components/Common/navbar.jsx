@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { HomeIcon, BookOpenIcon, HeartIcon, PlusIcon } from '@heroicons/react/24/outline';
 import ProfileButton from './profilebutton';
-import Globe from './globe';
+import Globe from '../UI/globe';
+import GlobalChat from '../../pages/Chat/globalchat';
 
 
 const Navbar = () => {
@@ -20,7 +21,7 @@ const Navbar = () => {
 {/*   globe */}
   <div className='flex flex-row  items-center'>
     
-    <Link to='/globalera' > <Globe /></Link>
+    <Link to='/globalchat' > <Globe /></Link>
         
   </div>
        

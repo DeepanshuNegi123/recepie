@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import IngredientInput from '../components/Recipe/ingredientinput';
-import StepInput from '../components/Recipe/setupinput';
-import { fetchRecipe, updateRecipe } from '../services/recipeservices';
-import { uploadImage } from '../services/imageservice';
+import IngredientInput from '../../components/Recipe/ingredientinput';
+import StepInput from '../../components/Recipe/setupinput';
+import { fetchRecipe, updateRecipe } from '../../services/recipeservices';
+import { uploadImage } from '../../services/imageservice';
 
 const EditRecipe = () => {
   const { id } = useParams();

@@ -7,7 +7,7 @@ export const getAuthHeadersForFormData = () => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`
 });
 
-// ✅ Helper function with debugging
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   

@@ -1,4 +1,4 @@
-import { BackButton } from "../components/UI/back";
+import { BackButton } from "../../components/UI/back";
 
 const Favorites = () => {
   return (

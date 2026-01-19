@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import IngredientInput from '../components/Recipe/ingredientinput';
-import StepInput from '../components/Recipe/setupinput';
-import { createRecipe } from '../services/recipeservices';
-import { uploadImage } from '../services/imageservice';
-import { BackButton } from '../components/UI/back';
+import IngredientInput from '../../components/Recipe/ingredientinput';
+import StepInput from '../../components/Recipe/setupinput';
+import { createRecipe } from '../../services/recipeservices';
+import { BackButton } from '../../components/UI/back';
 
 const CreateRecipe = () => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { BackButton } from "../components/UI/back";
-import { fetchMyKitchen } from "../services/recipeservices";
+import { BackButton } from "../../components/UI/back";
+import { fetchMyKitchen } from "../../services/recipeservices";
 import { Link } from "react-router-dom";
 
 const MyKitchen = () => {

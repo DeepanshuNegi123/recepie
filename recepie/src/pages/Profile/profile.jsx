@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaUser, FaUtensils, FaBookmark, FaClock, FaFire, FaHeart, FaShare, FaCamera, FaVideo, FaTrophy, FaStar, FaUsers, FaChartLine, FaSearch, FaFilter, FaSignOutAlt, FaBell, FaComments, FaGlobe, FaInstagram, FaFacebook, FaPinterest } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
-import getauthorisation from '../context/api';
+import getauthorisation from '../../context/api';
 
 
 const ProfilePage = () => {

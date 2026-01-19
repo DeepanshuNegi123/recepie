@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import RecipeCard from "../components/Recipe/Recipecard.jsx";
-import SearchBar from "../components/UI/searchbar.jsx";
-import { fetchRecipes } from "../services/recipeservices.jsx";
+import RecipeCard from "../../components/Recipe/Recipecard.jsx";
+import SearchBar from "../../components/UI/searchbar.jsx";
+import { fetchRecipes } from "../../services/recipeservices.jsx";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 const Home = () => {

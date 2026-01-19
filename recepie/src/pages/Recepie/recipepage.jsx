@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchRecipe } from '../services/recipeservices';
-import { BackButton } from '../components/UI/back';
-import {commentservice, fcomments} from '../services/commentservices';
+import { fetchRecipe } from '../../services/recipeservices';
+import { BackButton } from '../../components/UI/back';
+import {commentservice, fcomments} from '../../services/commentservices';
 
 
 
