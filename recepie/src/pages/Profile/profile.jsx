@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect} from 'react';
 import { FaUser, FaUtensils, FaBookmark, FaClock, FaFire, FaHeart, FaShare, FaCamera, FaVideo, FaTrophy, FaStar, FaUsers, FaChartLine, FaSearch, FaFilter, FaSignOutAlt, FaBell, FaComments, FaGlobe, FaInstagram, FaFacebook, FaPinterest } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -160,12 +160,12 @@ const ProfilePage = () => {
   // ✅ WORKING: Static achievements display
   // 🔴 TODO: Make dynamic based on user's actual achievements from backend
 
-  const achievements = [
-    { icon: <FaTrophy />, title: "Top Creator", color: "text-yellow-500" },
-    { icon: <FaFire />, title: "10K Likes", color: "text-orange-500" },
-    { icon: <FaStar />, title: "Featured Chef", color: "text-purple-500" },
-    { icon: <FaUsers />, title: "Community Leader", color: "text-blue-500" }
-  ];
+  // const achievements = [
+  //   { icon: <FaTrophy />, title: "Top Creator", color: "text-yellow-500" },
+  //   { icon: <FaFire />, title: "10K Likes", color: "text-primary" },
+  //   { icon: <FaStar />, title: "Featured Chef", color: "text-purple-500" },
+  //   { icon: <FaUsers />, title: "Community Leader", color: "text-blue-500" }
+  // ];
 
 
   // 🔴 TODO #4: FETCH NOTIFICATIONS FROM BACKEND
@@ -177,7 +177,7 @@ const ProfilePage = () => {
   // 4. Show unread count badge
 
 
-  const [notifications, setNotifications] = useState([
+  const [notifications,] = useState([
     // MOCK DATA - Replace with real API data
     // { text: "Sarah liked your Carbonara recipe", time: "2m ago", type: "like" },
     // { text: "New follower: Mike Chen", time: "1h ago", type: "follow" },
@@ -249,7 +249,8 @@ const ProfilePage = () => {
       setLoading(false);
 
     } catch (err) {
-      setError('Network error. Please try again.');
+      
+      setError('Network error. Please try again.',err);
       setLoading(false);
     }
   };
@@ -320,10 +321,10 @@ const ProfilePage = () => {
   // ✅ WORKING: Shows loading spinner while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-500 border-t-transparent"></div>
-          <p className="mt-4 text-orange-600 font-medium">Loading your culinary world...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent"></div>
+          <p className="mt-4 text-brand-800 font-medium">Loading your culinary world...</p>
         </div>
       </div>
     );
@@ -332,11 +333,11 @@ const ProfilePage = () => {
   // ✅ WORKING: Shows login form if not authenticated
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-orange-100">
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-brand-200">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-              <FaUtensils className="text-3xl text-orange-500" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 rounded-full mb-4">
+              <FaUtensils className="text-3xl text-primary" />
             </div>
             <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
             <p className="text-gray-500 mt-2">Sign in to continue your culinary journey</p>
@@ -356,7 +357,7 @@ const ProfilePage = () => {
                 type="email"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                 placeholder="your@email.com"
                 onKeyDown={(e) => e.key === 'Enter' && handleLoginSubmit()}
               />
@@ -369,7 +370,7 @@ const ProfilePage = () => {
                 type="password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                 placeholder="Enter your password"
                 onKeyDown={(e) => e.key === 'Enter' && handleLoginSubmit()}
               />
@@ -379,7 +380,7 @@ const ProfilePage = () => {
             <button
               onClick={handleLoginSubmit}
               disabled={loggingIn}
-              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-amber-600 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full bg-brand-800 text-white px-4 py-3 rounded-lg font-semibold hover:from-brand-900 hover:to-brand-800 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
               {loggingIn ? 'Signing in...' : 'Sign In'}
             </button>
@@ -387,7 +388,7 @@ const ProfilePage = () => {
             <div className="text-center pt-4 border-t border-gray-200">
               <p className="text-gray-600">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-orange-600 font-semibold hover:text-orange-700">
+                <Link to="/register" className="text-brand-800 font-semibold hover:text-brand-900">
                   Create Account
                 </Link>
               </p>
@@ -417,17 +418,17 @@ const ProfilePage = () => {
       {/* ========================================================================
           HEADER - ✅ WORKING
           ======================================================================== */}
-      <header className="bg-white  shadow-sm border-b border-orange-100 sticky top-0 z-50 backdrop-blur-lg bg-opacity-95">
+      <header className="bg-white  shadow-sm border-b border-brand-200 sticky top-0 z-50 backdrop-blur-lg bg-opacity-95">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center ">
             {/* <div className="flex items-center space-x-8">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-brand-800 bg-clip-text text-transparent">
                Recipe Book
               </h1>
               <nav className="hidden md:flex space-x-6">
-                <Link to="/" className="text-gray-600 hover:text-orange-500 transition font-medium">Home</Link>
-                <Link to="/explore" className="text-gray-600 hover:text-orange-500 transition font-medium">Explore</Link>
-                <Link to="/community" className="text-gray-600 hover:text-orange-500 transition font-medium">Community</Link>
+                <Link to="/" className="text-gray-600 hover:text-primary transition font-medium">Home</Link>
+                <Link to="/explore" className="text-gray-600 hover:text-primary transition font-medium">Explore</Link>
+                <Link to="/community" className="text-gray-600 hover:text-primary transition font-medium">Community</Link>
               </nav>
             </div> */}
 
@@ -437,7 +438,7 @@ const ProfilePage = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 hover:bg-orange-50 rounded-full transition"
+                  className="relative p-2 hover:bg-brand-50 rounded-full transition"
                 >
                   <FaBell className="text-gray-600" />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -449,8 +450,8 @@ const ProfilePage = () => {
                     <div className="space-y-3">
                       {/* 🔴 TODO: Replace with real notifications */}
                       {notifications.map((notif, idx) => (
-                        <div key={idx} className="flex items-start space-x-3 p-2 hover:bg-orange-50 rounded-lg transition cursor-pointer">
-                          <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                        <div key={idx} className="flex items-start space-x-3 p-2 hover:bg-brand-50 rounded-lg transition cursor-pointer">
+                          <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-700">{notif.text}</p>
                             <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
@@ -465,7 +466,7 @@ const ProfilePage = () => {
               {/* ✅ WORKING: Logout button */}
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-full font-medium hover:shadow-lg transition-all transform hover:scale-105"
+                className="flex items-center space-x-2 bg-brand-800 text-white px-4 py-2 rounded-full font-medium hover:shadow-lg transition-all transform hover:scale-105"
               >
                 <FaSignOutAlt />
                 <span className="hidden md:inline">Logout</span>
@@ -526,7 +527,7 @@ const ProfilePage = () => {
                    4. Connect button to trigger file input
               */}
               <div className="relative group">
-                <div className="w-40 h-40 rounded-full border-4 border-white bg-gradient-to-br from-orange-400 to-amber-400 shadow-2xl overflow-hidden">
+                <div className="w-40 h-40 rounded-full border-4 border-white bg-gradient-to-br from-brand-800 to-brand-900 shadow-2xl overflow-hidden">
                   <img
                     src={user.profileImage}
                     alt={user.name}
@@ -535,23 +536,23 @@ const ProfilePage = () => {
                 </div>
                 {/* 🔴 NOT WORKING: Button has no functionality */}
                 <button className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition">
-                  <FaCamera className="text-orange-500" />
+                  <FaCamera className="text-primary" />
                 </button>
               </div>
 
               {/* Profile Info Card */}
-              <div className="flex-1 text-center md:text-left bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-orange-100">
+              <div className="flex-1 text-center md:text-left bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-brand-200">
                 <div className="flex flex-col md:flex-row justify-between items-center">
                   <div>
                     <div className="flex items-center justify-center md:justify-start space-x-3 mb-2">
                       {/* ✅ WORKING: Shows user name from auth */}
                       <h1 className="text-3xl font-bold text-gray-800">{user.name}</h1>
-                      <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                      <span className="bg-brand-800 text-white px-3 py-1 rounded-full text-xs font-semibold">
                         PRO CHEF
                       </span>
                     </div>
                     {/* 🔴 TODO: Fetch from backend */}
-                    <p className="text-orange-600 font-medium mb-2">{user.username}</p>
+                    <p className="text-brand-800 font-medium mb-2">{user.username}</p>
                     <p className="text-gray-600 whitespace-pre-line max-w-2xl">{user.bio}</p>
                     <div className="flex items-center justify-center md:justify-start space-x-4 mt-3 text-sm text-gray-500">
                       <span className="flex items-center"><FaGlobe className="mr-1" /> {user.location}</span>
@@ -570,7 +571,7 @@ const ProfilePage = () => {
                          6. Update user state after successful edit
                     */}
                     {/* 🔴 NOT WORKING: Button has no functionality */}
-                    <button className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105">
+                    <button className="bg-brand-800 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105">
                       Edit Profile
                     </button>
                     <button className="bg-white border border-gray-300 px-4 py-2 rounded-full hover:bg-gray-50 transition">
@@ -596,8 +597,8 @@ const ProfilePage = () => {
             { /* <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-6">
               {/* ✅ WORKING: Displays count */}
             {/* 🔴 TODO #3: Calculate from myRecipes.length */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-orange-100 hover:shadow-xl transition text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center">
+                <div className="text-3xl font-bold bg-brand-800 bg-clip-text text-transparent">
                   {user.recipes}
                 </div>
                 <div className="text-gray-600 text-sm mt-1 font-medium">Recipes</div>
@@ -605,8 +606,8 @@ const ProfilePage = () => {
 
             {/* 🔴 TODO #8: Add onClick to show followers list */}
             {/* 🔴 TODO #3: Fetch from backend */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-orange-100 hover:shadow-xl transition text-center cursor-pointer">
-                <div className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-red-500 bg-clip-text text-transparent">
+            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center cursor-pointer">
+                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
                   {user.followers}
                 </div>
                 <div className="text-gray-600 text-sm mt-1 font-medium">Followers</div>
@@ -614,32 +615,32 @@ const ProfilePage = () => {
 
             {/* 🔴 TODO #8: Add onClick to show following list */}
             {/* 🔴 TODO #3: Fetch from backend */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-orange-100 hover:shadow-xl transition text-center cursor-pointer">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center cursor-pointer">
+                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
                   {user.following}
                 </div>
                 <div className="text-gray-600 text-sm mt-1 font-medium">Following</div>
               </div> */}
 
             {/* 🔴 TODO #3: Calculate sum of likes from myRecipes */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-orange-100 hover:shadow-xl transition text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center">
+                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
                   {user.totalLikes}
                 </div>
                 <div className="text-gray-600 text-sm mt-1 font-medium">Total Likes</div>
               </div> */}
 
             {/* 🔴 TODO #3: Calculate from savedRecipes.length */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-orange-100 hover:shadow-xl transition text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
+            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center">
+                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
                   {user.saved}
                 </div>
                 <div className="text-gray-600 text-sm mt-1 font-medium">Saved</div>
               </div> */}
 
             {/* 🔴 TODO #3: Fetch from backend based on achievements earned */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-orange-100 hover:shadow-xl transition text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center">
+                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
                   {user.achievements}
                 </div>
                 <div className="text-gray-600 text-sm mt-1 font-medium">Badges</div>
@@ -661,12 +662,12 @@ const ProfilePage = () => {
           TABS NAVIGATION - ✅ WORKING
           ======================================================================== */}
       <div className="container mx-auto px-4 mt-6">
-        <div className="bg-white rounded-xl shadow-lg border border-orange-100 p-2 flex flex-wrap gap-2">
+        <div className="bg-white rounded-xl shadow-lg border border-brand-200 p-2 flex flex-wrap gap-2">
           {/* ✅ WORKING: Tab switching */}
           <button
             className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'recipes'
-                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-orange-50'
+                ? 'bg-brand-800 text-white shadow-lg'
+                : 'text-gray-600 hover:bg-brand-50'
               }`}
             onClick={() => setActiveTab('recipes')}
           >
@@ -678,8 +679,8 @@ const ProfilePage = () => {
 
           <button
             className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'saved'
-                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-orange-50'
+                ? 'bg-brand-800 text-white shadow-lg'
+                : 'text-gray-600 hover:bg-brand-50'
               }`}
             onClick={() => setActiveTab('saved')}
           >
@@ -690,8 +691,8 @@ const ProfilePage = () => {
 
           <button
             className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'videos'
-                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-orange-50'
+                ? 'bg-brand-800 text-white shadow-lg'
+                : 'text-gray-600 hover:bg-brand-50'
               }`}
             onClick={() => setActiveTab('videos')}
           >
@@ -704,8 +705,8 @@ const ProfilePage = () => {
           {/* <button 
             className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'analytics' 
-                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg' 
-                : 'text-gray-600 hover:bg-orange-50'
+                ? 'bg-brand-800 text-white shadow-lg' 
+                : 'text-gray-600 hover:bg-brand-50'
             }`}
             onClick={() => setActiveTab('analytics')}
           >
@@ -724,7 +725,7 @@ const ProfilePage = () => {
           {activeTab === 'recipes' && (
             <div>
               {/* ✅ WORKING: Search and filter functionality */}
-              <div className="bg-white rounded-xl shadow-lg border border-orange-100 p-4 mb-6">
+              <div className="bg-white rounded-xl shadow-lg border border-brand-200 p-4 mb-6">
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1 relative">
                     <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -733,14 +734,14 @@ const ProfilePage = () => {
                       placeholder="Search your recipes..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     />
                   </div>
 
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   >
                     <option value="all">All Categories</option>
                     <option value="asian">Asian</option>
@@ -759,7 +760,7 @@ const ProfilePage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredRecipes.map(recipe => (
                   <div key={recipe.id} className="group bg-white rounded-2xl 
-                shadow-lg overflow-hidden border border-orange-100
+                shadow-lg overflow-hidden border border-brand-200
                  hover:shadow-2xl transition-all transform hover:-translate-y-1">
                     <div className="relative h-56 overflow-hidden">
 
@@ -770,7 +771,7 @@ const ProfilePage = () => {
                       />
 
                       <div className="absolute top-3 right-3 flex space-x-2">
-                        <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-orange-600">
+                        <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-brand-800">
                           {recipe.category}
                         </span>
                       </div>
@@ -833,7 +834,7 @@ const ProfilePage = () => {
 
                     <div className="p-5">
 
-                      <h3 className="font-bold text-xl mb-2 text-gray-800 group-hover:text-orange-600 transition">
+                      <h3 className="font-bold text-xl mb-2 text-gray-800 group-hover:text-brand-800 transition">
 
                         {recipe.title}
 
@@ -863,11 +864,11 @@ const ProfilePage = () => {
                       </div>
 
                       <div className="flex items-center justify-between mt-4">
-                        <span className="text-xs bg-orange-50 text-orange-600 px-3 py-1 rounded-full font-medium">
+                        <span className="text-xs bg-brand-50 text-brand-800 px-3 py-1 rounded-full font-medium">
                           {recipe.calories} cal
                         </span>
                         {/* 🔴 TODO: Add onClick to navigate to recipe detail page */}
-                        <button className="text-orange-600 font-semibold text-sm hover:text-orange-700 transition">
+                        <button className="text-brand-800 font-semibold text-sm hover:text-brand-900 transition">
                           View Recipe →
                         </button>
                       </div>
@@ -878,9 +879,9 @@ const ProfilePage = () => {
                 {/* ✅ WORKING: Link to create recipe page */}
                 <Link
                   to="/create"
-                  className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border-2 border-dashed border-orange-300 flex items-center justify-center min-h-[400px] flex-col p-8 text-center cursor-pointer hover:from-orange-100 hover:to-amber-100 transition-all transform hover:scale-105 group"
+                  className="bg-brand-100 rounded-2xl border-2 border-dashed border-brand-400 flex items-center justify-center min-h-[400px] flex-col p-8 text-center cursor-pointer hover:from-orange-100 hover:to-amber-100 transition-all transform hover:scale-105 group"
                 >
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform shadow-lg">
+                  <div className="w-20 h-20 rounded-full bg-brand-800 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform shadow-lg">
                     <FaUtensils className="text-3xl" />
                   </div>
                   <h3 className="font-bold text-2xl mb-2 text-gray-800">Create New Recipe</h3>
@@ -899,7 +900,7 @@ const ProfilePage = () => {
               {savedRecipes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {savedRecipes.map(recipe => (
-                    <div key={recipe.id} className="group bg-white rounded-2xl shadow-lg overflow-hidden border border-orange-100 hover:shadow-2xl transition-all transform hover:-translate-y-1">
+                    <div key={recipe.id} className="group bg-white rounded-2xl shadow-lg overflow-hidden border border-brand-200 hover:shadow-2xl transition-all transform hover:-translate-y-1">
                       <div className="relative h-56 overflow-hidden">
                         <img
                           src={recipe.image}
@@ -920,7 +921,7 @@ const ProfilePage = () => {
                         */}
                         {/* 🔴 NOT WORKING: Button has no functionality */}
                         <button className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-3 rounded-full hover:bg-white transition shadow-lg">
-                          <FaBookmark className="text-orange-500" />
+                          <FaBookmark className="text-primary" />
                         </button>
                       </div>
 
@@ -939,7 +940,7 @@ const ProfilePage = () => {
                         </div>
 
                         {/* 🔴 TODO: Add onClick to navigate to recipe detail page */}
-                        <button className="w-full mt-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <button className="w-full mt-4 bg-brand-800 text-white py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
                           View Recipe
                         </button>
                       </div>
@@ -950,13 +951,13 @@ const ProfilePage = () => {
 
 
                 // ✅ WORKING: Empty state display
-                <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-orange-100">
-                  <FaBookmark className="text-6xl text-orange-300 mx-auto mb-4" />
+                <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-brand-200">
+                  <FaBookmark className="text-6xl text-brand-400 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-gray-800 mb-2">No Saved Recipes Yet</h3>
                   <p className="text-gray-600 mb-6">Start exploring and save recipes you love!</p>
                   <Link
                     to="/explore"
-                    className="inline-block bg-gradient-to-r from-orange-500 to-amber-500 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105"
+                    className="inline-block bg-brand-800 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105"
                   >
                     Explore Recipes
                   </Link>
@@ -980,12 +981,12 @@ const ProfilePage = () => {
           */}
 
           {activeTab === 'videos' && (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-orange-100">
-              <FaVideo className="text-6xl text-orange-300 mx-auto mb-4" />
+            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-brand-200">
+              <FaVideo className="text-6xl text-brand-400 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-gray-800 mb-2">Video Recipes Coming Soon!</h3>
               <p className="text-gray-600 mb-6">Share your cooking process with video tutorials</p>
               {/* 🔴 NOT WORKING: Button has no functionality */}
-              <button className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105">
+              <button className="bg-brand-800 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105">
                 Upload Your First Video
               </button>
             </div>
@@ -1012,19 +1013,19 @@ const ProfilePage = () => {
             <div className="space-y-6">
               {/* 🔴 TODO: Replace with real analytics data */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-orange-100">
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-200">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-gray-800">Total Views</h3>
                     <FaChartLine className="text-blue-500 text-2xl" />
                   </div>
                   {/* 🔴 HARDCODED: Should calculate from real data */}
-                  <p className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                  <p className="text-4xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
                     47.3K
                   </p>
                   <p className="text-sm text-green-600 mt-2">↑ 12.5% from last month</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-orange-100">
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-200">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-gray-800">Engagement Rate</h3>
                     <FaHeart className="text-red-500 text-2xl" />
@@ -1036,13 +1037,13 @@ const ProfilePage = () => {
                   <p className="text-sm text-green-600 mt-2">↑ 3.2% from last month</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-orange-100">
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-200">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-gray-800">New Followers</h3>
                     <FaUsers className="text-purple-500 text-2xl" />
                   </div>
                   {/* 🔴 HARDCODED: Should calculate from real data */}
-                  <p className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                  <p className="text-4xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
                     +234
                   </p>
                   <p className="text-sm text-green-600 mt-2">↑ 18% from last month</p>
@@ -1050,12 +1051,12 @@ const ProfilePage = () => {
               </div>
 
               {/* 🔴 TODO: Calculate top performing recipes from real data */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-orange-100">
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-200">
                 <h3 className="font-bold text-gray-800 mb-4">Top Performing Recipes</h3>
                 <div className="space-y-4">
                   {myRecipes.slice(0, 3).map((recipe, idx) => (
-                    <div key={recipe.id} className="flex items-center space-x-4 p-4 bg-orange-50 rounded-xl">
-                      <div className="text-2xl font-bold text-orange-500">#{idx + 1}</div>
+                    <div key={recipe.id} className="flex items-center space-x-4 p-4 bg-brand-50 rounded-xl">
+                      <div className="text-2xl font-bold text-primary">#{idx + 1}</div>
                       <img src={recipe.image} alt={recipe.title} className="w-16 h-16 rounded-lg object-cover" />
                       <div className="flex-1">
                         <h4 className="font-bold text-gray-800">{recipe.title}</h4>
@@ -1083,7 +1084,7 @@ const ProfilePage = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent mb-4">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-brand-800 to-brand-900 bg-clip-text text-transparent mb-4">
                 Recipe Book
               </h3>
               <p className="text-gray-400 mb-4">
@@ -1106,20 +1107,20 @@ const ProfilePage = () => {
             <div>
               <h4 className="text-lg font-bold mb-4">Explore</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-orange-400 transition">Trending Recipes</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition">Popular Chefs</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition">Recipe Collections</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition">Cooking Videos</a></li>
+                <li><a href="#" className="hover:text-brand-500 transition">Trending Recipes</a></li>
+                <li><a href="#" className="hover:text-brand-500 transition">Popular Chefs</a></li>
+                <li><a href="#" className="hover:text-brand-500 transition">Recipe Collections</a></li>
+                <li><a href="#" className="hover:text-brand-500 transition">Cooking Videos</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-lg font-bold mb-4">Resources</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-orange-400 transition">Cooking Tips</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition">Meal Planning</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition">Nutrition Guide</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition">FAQ</a></li>
+                <li><a href="#" className="hover:text-brand-500 transition">Cooking Tips</a></li>
+                <li><a href="#" className="hover:text-brand-500 transition">Meal Planning</a></li>
+                <li><a href="#" className="hover:text-brand-500 transition">Nutrition Guide</a></li>
+                <li><a href="#" className="hover:text-brand-500 transition">FAQ</a></li>
               </ul>
             </div>
 
@@ -1138,10 +1139,10 @@ const ProfilePage = () => {
                 <input
                   type="email"
                   placeholder="Your email"
-                  className="flex-1 px-4 py-2 rounded-l-lg bg-white/10 border border-white/20 focus:outline-none focus:border-orange-500 text-white placeholder-gray-400"
+                  className="flex-1 px-4 py-2 rounded-l-lg bg-white/10 border border-white/20 focus:outline-none focus:border-primary text-white placeholder-gray-400"
                 />
                 {/* 🔴 NOT WORKING: Button has no functionality */}
-                <button className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-2 rounded-r-lg font-semibold hover:shadow-lg transition">
+                <button className="bg-brand-800 px-6 py-2 rounded-r-lg font-semibold hover:shadow-lg transition">
                   Join
                 </button>
               </div>

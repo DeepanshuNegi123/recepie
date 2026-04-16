@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import Home from "./pages/Recepie/home";
+import LandingPage from "./pages/globalfront/landing";
+import SearchEngine from "./pages/globalfront/search";
+import OrganicwillShop from "./pages/globalfront/organicwill";
+import EarthRevolution from "./pages/globalfront/earth";
 import RecipePage from "./pages/Recepie/recipepage";
 import CreateRecipe from "./pages/Recepie/createrecipe";
 import MyKitchen from "./pages/Recepie/mykitchen";
@@ -13,59 +17,49 @@ import Login from "./pages/Auth/login";
 import Profile from "./pages/Profile/profile";
 import Loading from "./components/Common/loading";
 import GlobalChat from "./pages/Chat/globalchat";
+import PrivateLayout from "./components/layout/privatelayout";
+import GLOBALLAYOUT from "./components/layout/globallayout";
+import Sidebar from "./pages/globalfront/sider";
+import { ChatProvider } from "./context/chatcontext";
+import EditRecipe from "./pages/Recepie/editrecipe";
 function App() {
-  const [loading, setLoading] = useState(true);
-  const [showLoader, setShowLoader] = useState(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false); // marks data/app ready
-      // remove loader after fade-out animation
-      setTimeout(() => setShowLoader(false), 3000); // match fade duration
-    }, 4000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <Router>
       <div className="min-h-screen flex flex-col bg-white">
-        {/* Loader overlay */}
-        {showLoader && (
-          <div
-            className={`fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900 transition-opacity duration-700 ${
-              loading ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
-          >
-            <Loading />
-          </div>
-        )}
+        {/* Loader overlay removed */}
 
         {/* Main app */}
-        <div
-          className={`flex flex-col flex-grow transition-opacity duration-700 ${
-            loading ? "opacity-0" : "opacity-100"
-          }`}
-        >
-          <Navbar />
+       
+       
 
-          <main className="flex-grow container mx-auto px-4 py-20">
-            <Routes>
-           
-              <Route path="/register" element={<Register />} />
-              <Route path="/" element={<Home />} />
-              <Route path="/recipes/:id" element={<RecipePage />} />
-              <Route path="/create" element={<CreateRecipe />} />
-              <Route path="/mykitchen" element={<MyKitchen />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path='/globalchat' element={<GlobalChat/>} />
-            </Routes>
-          </main>
+          
+<Routes>
+   <Route element={<GLOBALLAYOUT />}>
+    <Route path="/" element={<LandingPage />} />
+    <Route path="/search" element={<SearchEngine />} />
+    <Route path="/revolution" element={<EarthRevolution />} />
+    <Route path="/organicwill" element={<OrganicwillShop />} />
+   
+  </Route>
+  <Route element={<PrivateLayout/>}>
+    <Route path="/home" element={<Home />} />
+    <Route path="/globalchat" element={<ChatProvider><GlobalChat/></ChatProvider>} /> 
+    <Route path="/register" element={<Register />} />
+    <Route path="/recipes/:id" element={<RecipePage />} />
+    <Route path="/create" element={<CreateRecipe />} />
+    <Route path="/mykitchen" element={<MyKitchen />} />
+    <Route path="/favorites" element={<Favorites />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/profile" element={<Profile />} />
+    <Route path="/editrecipe" element={<EditRecipe/>}></Route>
+  </Route>
+</Routes>
+       
           {/* <Footer /> */}
           <Toaster position="top-right" />
-        </div>
+       
       </div>
     </Router>
   );

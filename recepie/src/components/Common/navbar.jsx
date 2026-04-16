@@ -1,136 +1,97 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { HomeIcon, BookOpenIcon, HeartIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BookOpenIcon, HeartIcon, PlusIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import ProfileButton from './profilebutton';
 import Globe from '../UI/globe';
-import GlobalChat from '../../pages/Chat/globalchat';
-
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50 ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
-      
-<div className="flex justify-between h-16">
-
-<div className='leftside flex flex  items-center '>
-
-
-{/*   globe */}
-  <div className='flex flex-row  items-center'>
-    
-    <Link to='/globalchat' > <Globe /></Link>
-        
-  </div>
-       
-
-          {/* Logo */}
-          <div className="flex items-center">
-               <ProfileButton />
-            <Link to="/" className="flex items-center ml-0">
-              <span className="text-yellow-600 font-bold text-xl">RecipeBook</span>
+    <nav className="glass fixed top-0 left-0 right-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-24">
+          
+          {/* Leftside - Logo and Globe */}
+          <div className="flex items-center gap-4 md:gap-6">
+            <Link to="/globalchat" className="hover:scale-105 transition-transform opacity-70 hover:opacity-100"> 
+              <Globe />
+            </Link>
+            
+            <Link to="/" className="flex items-center">
+              <span className="font-display font-bold text-3xl tracking-wide text-brand-900 border-b-2 border-transparent hover:border-primary transition-colors pb-1">
+                Recipe Book
+              </span>
             </Link>
           </div>
-          </div>
-
-
-
 
           {/* Desktop Navigation */}
-          <div className="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             <NavLink
-              to="/"
+              to="/home"
               className={({ isActive }) =>
-                `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                `inline-flex items-center px-1 pt-1 border-b-2 text-[15px] tracking-wide uppercase transition-colors ${
                   isActive
-                    ? 'border-yellow-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-primary text-brand-900 font-semibold'
+                    : 'border-transparent text-brand-600 hover:text-primary'
                 }`
               }
             >
-              <HomeIcon className="h-5 w-5 mr-1" />
-              Home
+              Feed
             </NavLink>
 
             <NavLink
               to="/mykitchen"
               className={({ isActive }) =>
-                `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                `inline-flex items-center px-1 pt-1 border-b-2 text-[15px] tracking-wide uppercase transition-colors ${
                   isActive
-                    ? 'border-yellow-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-primary text-brand-900 font-semibold'
+                    : 'border-transparent text-brand-600 hover:text-primary'
                 }`
               }
             >
-              <BookOpenIcon className="h-5 w-5 mr-1" />
               My Kitchen
             </NavLink>
 
             <NavLink
               to="/favorites"
               className={({ isActive }) =>
-                `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                `inline-flex items-center px-1 pt-1 border-b-2 text-[15px] tracking-wide uppercase transition-colors ${
                   isActive
-                    ? 'border-yellow-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-primary text-brand-900 font-semibold'
+                    : 'border-transparent text-brand-600 hover:text-primary'
                 }`
               }
             >
-              <HeartIcon className="h-5 w-5 mr-1" />
               Favorites
             </NavLink>
 
             <NavLink
               to="/create"
-              className={({ isActive }) =>
-                `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive
-                    ? 'border-yellow-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`
-              }
+              className="btn-primary ml-4"
             >
-              <PlusIcon className="h-5 w-5 mr-1" />
+              <PlusIcon className="h-4 w-4 mr-1 stroke-2" />
               Add Recipe
             </NavLink>
+            
+            <ProfileButton />
           </div>
 
           {/* Mobile menu button */}
-          <div className="-mr-2 flex items-center md:hidden">
+          <div className="flex items-center md:hidden gap-4">
+            <ProfileButton />
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-yellow-500"
+              className="btn-icon"
               aria-controls="mobile-menu"
               aria-expanded={isMobileMenuOpen}
             >
               <span className="sr-only">Open main menu</span>
               {isMobileMenuOpen ? (
-                // Close icon
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
               ) : (
-                // Menu icon
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
               )}
             </button>
           </div>
@@ -139,40 +100,56 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden" id="mobile-menu">
-          <div className="pt-2 pb-3 space-y-1">
+        <div className="md:hidden glass" id="mobile-menu">
+          <div className="pt-2 pb-3 space-y-1 px-4">
             <NavLink
-              to="/"
+              to="/home"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block pl-3 pr-4 py-2 border-l-4 border-yellow-500 text-base font-medium text-yellow-700 bg-yellow-50"
+              className={({ isActive }) =>
+                `block px-4 py-3 text-base font-medium transition-colors uppercase tracking-wide border-b border-brand-100 ${
+                  isActive ? 'text-primary' : 'text-brand-600 hover:bg-brand-50 hover:text-primary'
+                }`
+              }
             >
-              Home
+              Feed
             </NavLink>
-            <NavLink
+             <NavLink
               to="/mykitchen"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+              className={({ isActive }) =>
+                `block px-4 py-3 text-base font-medium transition-colors uppercase tracking-wide border-b border-brand-100 ${
+                  isActive ? 'text-primary' : 'text-brand-600 hover:bg-brand-50 hover:text-primary'
+                }`
+              }
             >
               My Kitchen
             </NavLink>
             <NavLink
               to="/favorites"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+              className={({ isActive }) =>
+                `block px-4 py-3 text-base font-medium transition-colors uppercase tracking-wide border-b border-brand-100 ${
+                  isActive ? 'text-primary' : 'text-brand-600 hover:bg-brand-50 hover:text-primary'
+                }`
+              }
             >
               Favorites
             </NavLink>
             <NavLink
               to="/create"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+              className={({ isActive }) =>
+                 `block px-4 py-3 text-base font-medium transition-colors uppercase tracking-wide ${
+                  isActive ? 'text-primary' : 'text-brand-600 hover:bg-brand-50 hover:text-primary'
+                }`
+              }
             >
               Add Recipe
             </NavLink>
           </div>
         </div>
       )}
-     </nav>
+    </nav>
   );
 };
 

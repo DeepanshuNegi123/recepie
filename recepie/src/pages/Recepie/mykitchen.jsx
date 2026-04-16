@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { BackButton } from "../../components/UI/back";
 import { fetchMyKitchen } from "../../services/recipeservices";
 import { Link } from "react-router-dom";
+import RecipeCard from "../../components/Recipe/Recipecard";
+
 
 const MyKitchen = () => {
   const [recipes, setRecipes] = useState([]);
@@ -25,10 +27,10 @@ const MyKitchen = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-orange-500 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600 font-medium">Loading your kitchen...</p>
+      <div className="min-h-screen flex items-center justify-center bg-brand-50">
+        <div className="text-center animate-pulse">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-2 border-brand-800 border-t-transparent"></div>
+          <p className="mt-6 font-medium text-brand-600 tracking-widest uppercase text-xs">Opening kitchen...</p>
         </div>
       </div>
     );
@@ -36,111 +38,61 @@ const MyKitchen = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl shadow-lg p-8">
-          <span className="text-6xl">😢</span>
-          <p className="mt-4 text-red-500 font-semibold text-lg">{error}</p>
+      <div className="min-h-screen flex items-center justify-center py-20 px-4 bg-brand-50">
+        <div className="text-center bg-white border border-brand-200 p-12 max-w-lg w-full">
+          <h2 className="text-2xl font-bold font-display text-brand-900 mb-2 italic">Something Went Wrong</h2>
+          <p className="text-primary-dark font-medium text-lg">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50">
-      <BackButton className='ml-4 mt-4' text="Back"/>
+    <div className="w-full pb-24 pt-24 bg-brand-50 min-h-screen">
+      <div className='max-w-6xl mx-auto px-4'>
+          <BackButton className='' text="Back"/>
+      </div>
       
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="mb-8 animate-fade-in">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent flex items-center gap-3">
-            <span className="text-4xl">🍳</span>
-            My Kitchen
-          </h1>
-          <p className="text-gray-600 mt-2">Your personal recipe collection</p>
+      <div className="max-w-6xl mx-auto px-4 mt-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 animate-fade-in gap-6 border-b border-brand-200 pb-8">
+          <div>
+            <h1 className="text-5xl font-display italic text-brand-900 mb-4">
+              My Kitchen
+            </h1>
+            <p className="text-brand-600 uppercase tracking-widest text-sm font-semibold">Your personal collection of culinary work.</p>
+          </div>
+          <div className="shrink-0 mb-2">
+             <Link to="/create" className="btn-primary">
+                Curate Recipe
+             </Link>
+          </div>
         </div>
 
         {recipes.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center animate-slide-up">
-            <span className="text-6xl block mb-4">👨‍🍳</span>
-            <p className="text-gray-500 text-lg">No recipes found. Create your first recipe!</p>
-            <p className="text-gray-400 mt-2">Start building your culinary masterpiece collection</p>
-            <Link  to="/create"
-            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-full mt-4 inline-block" >Create Recipe</Link>
+          <div className="bg-white border border-brand-200 shadow-sm p-16 text-center animate-slide-up mt-10">
+            <h2 className="text-3xl font-display italic text-brand-900 mb-4">No recipes yet</h2>
+            <p className="text-brand-600 text-lg mb-8 max-w-md mx-auto font-light">Start building your culinary collection. Your followers are waiting.</p>
+            <Link to="/create" className="btn-secondary">
+              Curate Your First Recipe
+            </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {recipes.map((recipe, index) => (
               <div
                 key={recipe._id}
-                className="bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 animate-slide-up group"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="animate-slide-up h-full"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={recipe.imageUrl || "https://via.placeholder.com/300"}
-                    alt={recipe.title}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-orange-600">
-                    {recipe.difficulty}
-                  </div>
-                </div>
-
-                <div className="p-5">
-                  <h2 className="text-xl font-bold text-gray-800 mb-2 line-clamp-1 group-hover:text-orange-600 transition-colors">
-                    {recipe.title}
-                  </h2>
-                  <p className="text-gray-600 line-clamp-2 text-sm mb-3">
-                    {recipe.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-1 text-gray-700 text-sm">
-                      <span>⏱</span>
-                      <span className="font-medium">{recipe.prepTime + recipe.cookTime} min</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-700 text-sm">
-                      <span>🍽</span>
-                      <span className="font-medium">{recipe.servings} servings</span>
-                    </div>
-                  </div>
-                </div>
+                 <RecipeCard recipe={recipe} />
               </div>
             ))}
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.6s ease-out backwards;
-        }
-      `}</style>
+      <div>
+        {/* <EditRecipe/> */}
+      </div>
     </div>
   );
 };

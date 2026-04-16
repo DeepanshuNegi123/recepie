@@ -7,7 +7,7 @@ const authroutes = require('./routes/authroutes');
 const otherroutes = require('./routes/otherroutes');
 const app = express();
 const cors = require('cors');
-app.use(cors({
+app.use(cors({ // we have harcoded the frontend url 
     origin: 'http://localhost:5173',
     credentials:true 
 }))

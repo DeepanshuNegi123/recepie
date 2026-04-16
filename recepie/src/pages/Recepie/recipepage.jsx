@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { fetchRecipe } from '../../services/recipeservices';
 import { BackButton } from '../../components/UI/back';
 import {commentservice, fcomments} from '../../services/commentservices';
+import { HeartIcon, ClockIcon, UserGroupIcon, HashtagIcon, DocumentTextIcon, FireIcon } from '@heroicons/react/24/outline';
+
 
 
 
@@ -37,8 +39,11 @@ const RecipePage = () => {
             }
 
             console.log(" Comment added successfully:", back);
-            alert(`${text} has been successfully added!`);
+            alert(`Comment has been successfully added!`);
             form.reset();
+            // Refresh comments
+            const result = await fcomments({ recipeId: id });
+            if (result.success) setComments(result.comments || []);
         } catch (error) {
             console.error("Error submitting comment:", error);
             alert('Something went wrong. Please try again.');
@@ -94,74 +99,119 @@ const RecipePage = () => {
 
 
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
-    if (!recipe) return <div>Recipe not found</div>;
+    if (loading) return (
+      <div className="min-h-screen flex items-center justify-center bg-brand-50">
+        <div className="text-center animate-pulse">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-2 border-brand-800 border-t-transparent"></div>
+          <p className="mt-6 font-medium text-brand-600 tracking-widest uppercase text-xs">Simmering...</p>
+        </div>
+      </div>
+    );
+    if (error) return <div className="text-center py-20 text-primary-dark font-display italic text-2xl bg-brand-50 min-h-screen">An error occurred: {error}</div>;
+    if (!recipe) return <div className="text-center py-20 text-brand-600 font-display text-xl bg-brand-50 min-h-screen">Recipe not found</div>;
 
     return (
-        <>
-            <div className=''>
+        <div className="animate-fade-in pb-24 bg-brand-50 min-h-screen pt-24">
+            <div className='max-w-6xl mx-auto px-4'>
                 <BackButton className='' text='Back'/>
             </div>
+         
 
-            <div className="max-w-4xl mx-auto py-8 px-4">
-                <h1 className="text-3xl font-bold text-gray-800 mb-4">{recipe.title}</h1>
-
-                <div className="mb-6">
+            <div className="max-w-6xl mx-auto px-4 mt-8">
+                
+                {/* Hero Section of Recipe */}
+                <div className="relative mb-16 bg-black h-[600px] border border-brand-200">
                     <img
-                        src={recipe.imageUrl}
+                        src={recipe.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200"}
                         alt={recipe.title}
-                        className="w-full h-64 object-cover rounded-lg"
+                        className="w-full h-full object-cover opacity-80 mix-blend-overlay"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-10 md:p-16">
+                      <h1 className="text-5xl md:text-7xl font-display italic text-brand-50 mb-6 leading-tight max-w-4xl">
+                        {recipe.title}
+                      </h1>
+                      <div className="flex flex-wrap items-center gap-8 text-brand-100 uppercase tracking-widest text-xs font-semibold">
+                        <div className="flex items-center gap-3">
+                          <img src={recipe.author?.avatar || `https://ui-avatars.com/api/?name=${recipe.author?.username || 'C'}&background=c5b497&color=fff`} className="w-10 h-10 rounded-full border border-brand-300 grayscale-[20%]" alt="author"/>
+                          <span>Author: {recipe.author?.username || "Unknown Artisan"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <FireIcon className="w-5 h-5 text-brand-300" />
+                          <span>Level: {recipe.difficulty || 'Medium'}</span>
+                        </div>
+                      </div>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="md:col-span-2">
-                        <div className="mb-8">
-                            <h2 className="text-xl font-semibold text-gray-800 mb-4">Ingredients</h2>
-                            <ul className="space-y-2">
-                                {recipe.ingredients.map((ingredient, index) => (
-                                    <li key={index} className="flex items-start">
-                                        <span className="mr-2">•</span>
-                                        <span>
-                      {ingredient.amount && `${ingredient.amount} `}
-                                            {ingredient.unit && `${ingredient.unit} `}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                    
+                    {/* Left Column - Main Content */}
+                    <div className="lg:col-span-2">
+                        
+                        {/* Ingredients */}
+                        <div className="mb-16 bg-white border border-brand-200 p-10 lg:p-14 shadow-sm">
+                            <h2 className="text-3xl font-display italic text-brand-900 mb-8 border-b border-brand-200 pb-4">
+                              Ingredients
+                            </h2>
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                                {recipe.ingredients?.map((ingredient, index) => (
+                                    <li key={index} className="flex items-start py-2 border-b border-brand-100 last:border-0 md:[&:nth-last-child(-n+2)]:border-0">
+                                        <span className="h-1.5 w-1.5 bg-brand-400 rounded-full mr-4 mt-2.5"></span>
+                                        <span className="text-brand-800 font-light text-lg tracking-wide leading-relaxed">
+                                            {ingredient.amount && <span className="font-semibold text-brand-900">{ingredient.amount} </span>}
+                                            {ingredient.unit && <span className="text-brand-600 mr-2">{ingredient.unit} </span>}
                                             {ingredient.name}
-                    </span>
+                                        </span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
 
-                        <div>
-                            <h2 className="text-xl font-semibold text-gray-800 mb-4">Instructions</h2>
-                            <ol className="space-y-4">
-                                {recipe.steps.map((step, index) => (
-                                    <li key={index} className="flex">
-                                        <span className="mr-3 font-bold">{index + 1}.</span>
-                                        <span>{step}</span>
+                        {/* Instructions */}
+                        <div className="bg-white border border-brand-200 p-10 lg:p-14 shadow-sm">
+                            <h2 className="text-3xl font-display italic text-brand-900 mb-10 border-b border-brand-200 pb-4">
+                              Directions
+                            </h2>
+                            <ol className="space-y-12">
+                                {recipe.steps?.map((step, index) => (
+                                    <li key={index} className="flex flex-col gap-3 group">
+                                        <span className="text-brand-400 font-bold font-display uppercase tracking-widest text-xs">
+                                          Step {index + 1}
+                                        </span>
+                                        <p className="text-brand-900 text-xl font-light leading-relaxed">{step}</p>
                                     </li>
                                 ))}
                             </ol>
                         </div>
                     </div>
 
-                    <div className="md:col-span-1">
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="font-semibold text-lg mb-4">Recipe Details</h3>
-                            <div className="space-y-3">
-                                <p><span className="font-medium">Prep Time:</span> {recipe.prepTime} minutes</p>
-                                <p><span className="font-medium">Cook Time:</span> {recipe.cookTime} minutes</p>
-                                <p><span className="font-medium">Servings:</span> {recipe.servings}</p>
-                                <p><span className="font-medium">Difficulty:</span> {recipe.difficulty}</p>
+                    {/* Right Column - Sidebar info */}
+                    <div className="lg:col-span-1">
+                        <div className="bg-white border border-brand-200 p-10 sticky top-32 shadow-sm">
+                            <h3 className="font-display italic text-2xl text-brand-900 mb-8 border-b border-brand-200 pb-4">Overview</h3>
+                            
+                            <div className="space-y-8 uppercase tracking-widest text-xs font-semibold text-brand-700">
+                                <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-3"><ClockIcon className="w-5 h-5"/> Prep</span>
+                                  <span className="text-brand-900">{recipe.prepTime} mins</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-3"><FireIcon className="w-5 h-5"/> Cook</span>
+                                  <span className="text-brand-900">{recipe.cookTime} mins</span>
+                                </div>
+                                <div className="flex items-center justify-between border-b border-brand-200 pb-8">
+                                  <span className="flex items-center gap-3"><UserGroupIcon className="w-5 h-5"/> Yield</span>
+                                  <span className="text-brand-900">{recipe.servings} servings</span>
+                                </div>
+                                
                                 {recipe.tags && recipe.tags.length > 0 && (
-                                    <div>
-                                        <span className="font-medium">Tags:</span>
-                                        <div className="flex flex-wrap gap-2 mt-1">
+                                    <div className="pt-2">
+                                        <p className="mb-4">Tags</p>
+                                        <div className="flex flex-wrap gap-3">
                                             {recipe.tags.map((tag, index) => (
-                                                <span key={index} className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">
-                          {tag}
-                        </span>
+                                                <span key={index} className="border border-brand-300 text-brand-600 px-4 py-1 text-[10px]">
+                                                  {tag}
+                                                </span>
                                             ))}
                                         </div>
                                     </div>
@@ -173,106 +223,70 @@ const RecipePage = () => {
             </div>
 
             {/* Enhanced Comments Section */}
-            <div className='max-w-4xl mx-auto px-4 pb-12'>
-                <div className='bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden'>
+            <div className='max-w-4xl mx-auto px-4 mt-24'>
+                <div className='bg-white border border-brand-200 shadow-sm overflow-hidden'>
 
                     {/* Comments Header */}
-                    <div className='bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-5 border-b border-gray-200'>
+                    <div className='bg-brand-50 px-10 py-8 border-b border-brand-200'>
                         <div className='flex items-center justify-between'>
-                            <h2 className='text-2xl font-bold text-gray-800 flex items-center gap-3'>
-                                <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                Comments
+                            <h2 className='text-3xl font-display italic text-brand-900'>
+                                Community Notes
                             </h2>
-                            <span className='bg-blue-600 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm'>
-                {comments.length}
-              </span>
-                        </div>
-                    </div>
-
-                    {/* User Profile Section */}
-                    <div className='px-6 py-5 bg-gray-50 border-b border-gray-200'>
-                        <div className='flex items-center gap-4'>
-                            <div className='relative'>
-                                <img
-                                    src="vite.svg"
-                                    alt="logo"
-                                    className='rounded-full h-14 w-14 ring-4 ring-white shadow-md object-cover'
-                                />
-                                <div className='absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white'></div>
-                            </div>
-                            <div>
-                                <h3 className='text-lg font-bold text-gray-800'>username</h3>
-                                <p className='text-sm text-gray-500'>Share your thoughts</p>
-                            </div>
+                            <span className='text-brand-600 uppercase tracking-widest text-xs font-semibold'>
+                                {comments.length} Comments
+                            </span>
                         </div>
                     </div>
 
                     {/* Add Comment Form */}
-                    <div className='px-6 py-6 bg-white'>
-                        <form className='flex flex-col gap-4' onSubmit={addcomment}>
-                            <div className='relative'>
-                <textarea
-                    name='comment'
-                    rows='3'
-                    className='w-full border-2 border-gray-200 rounded-xl p-4 pr-12 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 resize-none text-gray-700 placeholder-gray-400'
-                    placeholder='Share your experience with this recipe...'
-                />
-                                <svg className="absolute right-4 top-4 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                            </div>
-
+                    <div className='p-10'>
+                        <form className='flex flex-col gap-6' onSubmit={addcomment}>
+                            <textarea
+                                name='comment'
+                                rows='4'
+                                className='w-full bg-brand-50 border border-brand-200 p-6 focus:border-brand-500 focus:ring-0 transition-colors resize-none text-brand-900 placeholder-brand-400 text-lg font-light shadow-inner rounded-none'
+                                placeholder='Share your experience with this recipe...'
+                            />
                             <div className='flex justify-end'>
-                                <button
-                                    type='submit'
-                                    className='bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2'
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                    </svg>
-                                    Post Comment
+                                <button type='submit' className='btn-primary px-10'>
+                                    Publish Note
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    {/* Sample Comment Display (for visual reference) */}
-
-
-
-{/* Comments List Section */}
-<div className='px-6 py-4 border-t border-gray-200'>
-  {comments.length === 0 ? (
-    <div className='text-sm text-gray-500 text-center py-4'>
-      No comments yet — be the first to share your thoughts!
-    </div>
-  ) : (
-    <div className='divide-y divide-gray-100'>
-      {comments.map((comment) => (
-        <div key={comment._id} className='py-3'>
-          <div className='flex items-center justify-between'>
-            <div className='text-sm font-semibold text-gray-800'>
-              {comment.userId?.username || 'Anonymous'}
-            </div>
-            <div className='text-xs text-gray-400'>
-              {new Date(comment.createdAt).toLocaleString()}
-            </div>
-          </div>
-          <p className='text-sm text-gray-600 mt-1'>{comment.text}</p>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-
-                  
-
+                    {/* Comments List Section */}
+                    <div className='p-10 border-t border-brand-100 bg-white'>
+                      {comments.length === 0 ? (
+                        <div className='text-lg text-brand-500 font-light text-center py-10 italic'>
+                          No notes have been added yet. Be the first to share.
+                        </div>
+                      ) : (
+                        <div className='space-y-10'>
+                          {comments.map((comment) => (
+                            <div key={comment._id} className='border-b border-brand-100 pb-10 last:border-0 last:pb-0'>
+                              <div className='flex items-center justify-between mb-4'>
+                                <div className="flex items-center gap-4">
+                                  <div className="w-10 h-10 bg-brand-200 rounded-full flex items-center justify-center text-brand-800 font-display italic font-bold">
+                                    {(comment.userId?.username || 'A')[0].toUpperCase()}
+                                  </div>
+                                  <div className='uppercase tracking-widest text-xs font-semibold text-brand-900'>
+                                    {comment.userId?.username || 'Anonymous'}
+                                  </div>
+                                </div>
+                                <div className='uppercase tracking-widest text-[10px] text-brand-500'>
+                                  {new Date(comment.createdAt).toLocaleDateString()}
+                                </div>
+                              </div>
+                              <p className='text-xl text-brand-800 font-light leading-relaxed pl-14'>{comment.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                 </div>
             </div>
-        </>
+        </div>
     )
 };
 
