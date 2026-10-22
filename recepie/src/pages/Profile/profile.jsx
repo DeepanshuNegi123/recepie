@@ -1,1187 +1,871 @@
-import React, { useState, useEffect} from 'react';
-import { FaUser, FaUtensils, FaBookmark, FaClock, FaFire, FaHeart, FaShare, FaCamera, FaVideo, FaTrophy, FaStar, FaUsers, FaChartLine, FaSearch, FaFilter, FaSignOutAlt, FaBell, FaComments, FaGlobe, FaInstagram, FaFacebook, FaPinterest } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import { useNavigate, useLocation } from 'react-router-dom';
-import getauthorisation from '../../context/api';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  PlusIcon, 
+  PencilSquareIcon, 
+  TrashIcon, 
+  ClockIcon, 
+  UserGroupIcon, 
+  BookmarkIcon, 
+  ShoppingBagIcon, 
+  HeartIcon, 
+  ArrowRightOnRectangleIcon, 
+  XMarkIcon,
+  CheckIcon,
+  SparklesIcon
+} from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
+import { toast } from 'react-hot-toast';
+import { useUser } from '../../context/usercontext';
+import api from '../../services/api';
+import { fetchMyKitchen, fetchFavorites, toggleFavorite, deleteRecipe } from '../../services/recipeservices';
+import { fetchMyOrders } from '../../services/orderservices';
 
+const AVATAR_PRESETS = [
+  'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=300&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=300&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1607631568010-a87245c0daf8?w=300&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop',
+];
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // ============================================================================
-  // STATE MANAGEMENT
-  // ============================================================================
+  const { user: contextUser, setUser: setContextUser, logout } = useUser();
 
-  const [activeTab, setActiveTab] = useState('recipes');
-
-  // ✅ WORKING: Loading and error states for auth
+  const [activeTab, setActiveTab] = useState('recipes'); // 'recipes' | 'saved' | 'orders'
+  const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // ✅ WORKING: Login form states
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [loggingIn, setLoggingIn] = useState(false);
+  // Tab Data States
+  const [myRecipes, setMyRecipes] = useState([]);
+  const [recipesLoading, setRecipesLoading] = useState(false);
+  const [savedRecipes, setSavedRecipes] = useState([]);
+  const [savedLoading, setSavedLoading] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
-  // ✅ WORKING: UI states
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
-
-  // 🔴 TODO #3: UPDATE USER PROFILE STATS DYNAMICALLY
-  // These stats should be calculated from real backend data, not hardcoded
-  // NEEDS IMPLEMENTATION:
-  // - recipes: should be myRecipes.length
-  // - saved: should be savedRecipes.length
-  // - followers, following: fetch from backend API
-  // - totalLikes: sum of all likes from user's recipes
-  // - achievements: fetch from backend based on user accomplishments
-
-
-
-
-  const [user, setUser] = useState({
-    name: "Johnson", // ✅ WORKING: Updated from auth API
-    username: "@johnson_cooks", // 🔴 NEEDS: Fetch from backend
-    bio: "🔥 Food enthusiast | 🥘 Recipe Creator | 🌱 Healthy Living Advocate\nSharing delicious recipes from around the world!", // 🔴 NEEDS: Fetch from backend
-
-    joinedDate: "January 2023", // 🔴 NEEDS: Fetch from backend
-    recipes: 42, // 🔴 NEEDS: Calculate from myRecipes.length
-    saved: 127, // 🔴 NEEDS: Calculate from savedRecipes.length
-    followers: 2800, // 🔴 NEEDS: Fetch from backend
-    following: 342, // 🔴 NEEDS: Fetch from backend
-    totalLikes: 15400, // 🔴 NEEDS: Sum of all likes from myRecipes
-    achievements: 8, // 🔴 NEEDS: Fetch from backend
-    profileImage: "", // 🔴 NEEDS: Fetch from backend
-    coverImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600" // 🔴 NEEDS: Fetch from backend
+  // Edit Profile Modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    username: '',
+    bio: '',
+    avatar: ''
   });
+  const [savingProfile, setSavingProfile] = useState(false);
 
-  // 🔴 TODO #1: FETCH USER'S RECIPES FROM BACKEND
-  // CURRENTLY: Using mock/dummy data
-  // NEEDS IMPLEMENTATION:
-  // 1. Create API endpoint: GET /api/recipes/my-recipes
-  // 2. Add useEffect to fetch on component mount:
-  //    useEffect(() => { fetchMyRecipes() }, [])
-  // 3. Implement fetchMyRecipes function:
-  //    async function fetchMyRecipes() {
-  //      const response = await fetch('http://localhost:5003/api/recipes/my-recipes', {
-  //        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-  //      });
-  //      const data = await response.json();
-  //      setMyRecipes(data.recipes);
-  //    }
-
-
-  const fetchingmyrecipes = async () => {
-    try {
-      const response = await fetch('http://localhost:5003/recipes/mykitchen', {
-        headers: getauthorisation()
-      })
-
-      console.log(response.status);
-      if (!response.ok) {
-        throw new Error('Failed to fetch my recipes');
-      }
-
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setMyRecipes(data);
-      }
-      else if (data.recipes) {
-        setMyRecipes(data.recipes);
-      }
-
-      else {
-        setMyRecipes([]);
-      }
-      console.log(data);
-
-
-
-    }
-
-
-    catch (err) {
-
-      console.log(err);
-      setMyRecipes([]);
-
-    }
-
-  }
-
-
-  const [myRecipes, setMyRecipes] = useState([
-
-  ]);
-
-
-  // 🔴 TODO #2: FETCH SAVED RECIPES FROM BACKEND
-  // CURRENTLY: Using mock/dummy data
-  // NEEDS IMPLEMENTATION:
-  // 1. Create API endpoint: GET /api/recipes/saved
-  // 2. Add useEffect to fetch on component mount
-  // 3. Implement fetchSavedRecipes function similar to myRecipes
-  const [savedRecipes, setSavedRecipes] = useState([
-
-    // {
-    //   id: 7,
-    //   title: "Korean BBQ Tacos",
-    //   author: "Chef Maria",
-    //   image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400",
-    //   time: "45 min",
-    //   difficulty: "Medium",
-    //   likes: 5600,
-    //   rating: 4.8
-    // },
-    // {
-    //   id: 8,
-    //   title: "Matcha Tiramisu",
-    //   author: "Sweet Dreams Bakery",
-    //   image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400",
-    //   time: "3 hrs",
-    //   difficulty: "Hard",
-    //   likes: 3200,
-    //   rating: 4.9
-    // },
-    // {
-    //   id: 9,
-    //   title: "Poke Bowl Perfection",
-    //   author: "Ocean Kitchen",
-    //   image: "https://images.unsplash.com/photo-1546069901-d5bfd2cbfb1f?w=400",
-    //   time: "25 min",
-    //   difficulty: "Easy",
-    //   likes: 2800,
-    //   rating: 4.7
-    // }
-  ]);
-
-  // ✅ WORKING: Static achievements display
-  // 🔴 TODO: Make dynamic based on user's actual achievements from backend
-
-  // const achievements = [
-  //   { icon: <FaTrophy />, title: "Top Creator", color: "text-yellow-500" },
-  //   { icon: <FaFire />, title: "10K Likes", color: "text-primary" },
-  //   { icon: <FaStar />, title: "Featured Chef", color: "text-purple-500" },
-  //   { icon: <FaUsers />, title: "Community Leader", color: "text-blue-500" }
-  // ];
-
-
-  // 🔴 TODO #4: FETCH NOTIFICATIONS FROM BACKEND
-  // CURRENTLY: Using mock/dummy data
-  // NEEDS IMPLEMENTATION:
-  // 1. Create API endpoint: GET /api/notifications
-  // 2. Fetch notifications on component mount and periodically
-  // 3. Mark notifications as read when clicked
-  // 4. Show unread count badge
-
-
-  const [notifications,] = useState([
-    // MOCK DATA - Replace with real API data
-    // { text: "Sarah liked your Carbonara recipe", time: "2m ago", type: "like" },
-    // { text: "New follower: Mike Chen", time: "1h ago", type: "follow" },
-    // { text: "Your recipe was featured!", time: "3h ago", type: "feature" }
-  ]);
-
-
-  // ============================================================================
-  // AUTHENTICATION & USER DATA
-  // ============================================================================
-
-  // ✅ WORKING: Checks if user is authenticated and fetches basic profile
-  // ⚠️ PARTIAL: Only fetches username and email, needs to fetch all profile data
-  // 
-
-
-  const checkAuth = async () => {
-
-    try {
-
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        setError('Please log in to view your profile');
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch('http://localhost:5003/api/auth/profile', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem('token');
-          setError('Session expired. Please log in again.');
-        } else {
-          setError('Failed to fetch profile data');
-        }
-        setLoading(false);
-        return;
-      }
-
-
-      const data = await response.json();
-
-      // ⚠️ PARTIAL: Only updates name and email
-      // 🔴 NEEDS: Update all user fields (bio, location, images, stats, etc.)
-
-      setUser(prev => ({
-        ...prev,
-        name: data.user.username,
-        email: data.user.email,
-
-        // 🔴 TODO: Add these fields from API response:
-        // bio: data.user.bio,
-        // location: data.user.location,
-        // profileImage: data.user.profileImage,
-        // coverImage: data.user.coverImage,
-        // etc.
-
-      }));
-
+  // Load Profile from backend
+  const loadProfile = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
       setLoading(false);
+      return;
+    }
 
+    try {
+      setLoading(true);
+      const res = await api.get('/auth/profile');
+      if (res.data?.user) {
+        setProfileData(res.data.user);
+        setEditForm({
+          username: res.data.user.username || '',
+          bio: res.data.user.bio || '',
+          avatar: res.data.user.avatar || ''
+        });
+        setContextUser(res.data.user);
+      }
     } catch (err) {
-      
-      setError('Network error. Please try again.',err);
+      console.error('Failed to load profile:', err);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
+      }
+    } finally {
       setLoading(false);
     }
   };
 
+  // Load My Recipes
+  const loadMyRecipes = async () => {
+    try {
+      setRecipesLoading(true);
+      const data = await fetchMyKitchen();
+      setMyRecipes(Array.isArray(data) ? data : (data.recipes || []));
+    } catch (err) {
+      console.error('Error fetching my kitchen:', err);
+    } finally {
+      setRecipesLoading(false);
+    }
+  };
 
+  // Load Saved Recipes
+  const loadSavedRecipes = async () => {
+    try {
+      setSavedLoading(true);
+      const data = await fetchFavorites();
+      setSavedRecipes(Array.isArray(data) ? data : (data.recipes || []));
+    } catch (err) {
+      console.error('Error fetching favorites:', err);
+    } finally {
+      setSavedLoading(false);
+    }
+  };
 
-
-
-
-  // ✅ WORKING: Runs on component mount to check authentication
+  // Load Orders
+  const loadOrders = async () => {
+    try {
+      setOrdersLoading(true);
+      const data = await fetchMyOrders();
+      setOrders(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
 
   useEffect(() => {
-    checkAuth();
-    fetchingmyrecipes();
-  }, [location.pathname]);
+    loadProfile();
+    loadMyRecipes();
+    loadSavedRecipes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  useEffect(() => {
+    if (activeTab === 'orders' && orders.length === 0) {
+      loadOrders();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
-  // ✅ WORKING: Logout functionality
+  // Handle Remove / Unsave
+  const handleUnsave = async (recipeId) => {
+    try {
+      await toggleFavorite(recipeId);
+      setSavedRecipes(prev => prev.filter(r => (r._id || r.id) !== recipeId));
+      setProfileData(prev => prev ? {
+        ...prev,
+        stats: {
+          ...prev.stats,
+          saved: Math.max(0, (prev.stats?.saved || 1) - 1)
+        }
+      } : prev);
+      toast.success('Removed from saved recipes');
+    } catch (err) {
+      console.error('Error unsaving recipe:', err);
+      toast.error('Could not update saved recipes');
+    }
+  };
+
+  // Handle Delete My Recipe
+  const handleDeleteRecipe = async (recipeId) => {
+    if (!window.confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await deleteRecipe(recipeId);
+      setMyRecipes(prev => prev.filter(r => (r._id || r.id) !== recipeId));
+      setProfileData(prev => prev ? {
+        ...prev,
+        stats: {
+          ...prev.stats,
+          recipes: Math.max(0, (prev.stats?.recipes || 1) - 1)
+        }
+      } : prev);
+      toast.success('Recipe deleted successfully');
+    } catch (err) {
+      console.error('Error deleting recipe:', err);
+      toast.error('Failed to delete recipe');
+    }
+  };
+
+  // Handle Edit Profile Submission
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!editForm.username.trim()) {
+      toast.error('Username cannot be empty');
+      return;
+    }
+
+    try {
+      setSavingProfile(true);
+      const res = await api.put('/auth/profile', {
+        username: editForm.username.trim(),
+        bio: editForm.bio.trim(),
+        avatar: editForm.avatar.trim()
+      });
+
+      if (res.data?.user) {
+        const updated = res.data.user;
+        setProfileData(prev => ({
+          ...prev,
+          username: updated.username,
+          bio: updated.bio,
+          avatar: updated.avatar
+        }));
+        setContextUser(prev => ({
+          ...prev,
+          username: updated.username,
+          bio: updated.bio,
+          avatar: updated.avatar
+        }));
+        localStorage.setItem('user', JSON.stringify({
+          ...(contextUser || {}),
+          username: updated.username,
+          avatar: updated.avatar
+        }));
+        toast.success('Profile updated successfully');
+        setIsEditModalOpen(false);
+      }
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      toast.error(err.response?.data?.message || err.response?.data?.error || 'Failed to update profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
+    toast.success('Logged out successfully');
     navigate('/login');
   };
 
+  const token = localStorage.getItem('token');
 
-  // ✅ WORKING: Login form submission
-
-  const handleLoginSubmit = async () => {
-    setLoggingIn(true);
-    setLoginError('');
-
-    try {
-      const response = await fetch('http://localhost:5003/api/auth/login', {
-
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-
-      setError('');
-      setLoggingIn(false);
-
-      // window.location.reload();
-      navigate('/profile');
-    } catch (err) {
-      setLoginError(err.message || 'Login failed. Please check your credentials.');
-      setLoggingIn(false);
-    }
-  };
-
-  // ============================================================================
-  // LOADING & ERROR STATES
-  // ============================================================================
-
-  // ✅ WORKING: Shows loading spinner while checking auth
+  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-brand-50 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent"></div>
-          <p className="mt-4 text-brand-800 font-medium">Loading your culinary world...</p>
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center pt-24 pb-20">
+        <div className="text-center animate-pulse">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent"></div>
+          <p className="mt-4 font-medium text-brand-700 tracking-widest uppercase text-xs">
+            Opening your profile...
+          </p>
         </div>
       </div>
     );
   }
 
-  // ✅ WORKING: Shows login form if not authenticated
-  if (error) {
+  // Unauthenticated view
+  if (!token || !profileData) {
     return (
-      <div className="min-h-screen bg-brand-50 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-brand-200">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 rounded-full mb-4">
-              <FaUtensils className="text-3xl text-primary" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
-            <p className="text-gray-500 mt-2">Sign in to continue your culinary journey</p>
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center px-4 pt-24 pb-20">
+        <div className="max-w-md w-full bg-white border border-brand-200 p-8 md:p-10 shadow-sm text-center">
+          <div className="w-16 h-16 mx-auto mb-6 bg-brand-100 rounded-full flex items-center justify-center text-primary">
+            <BookmarkIcon className="h-8 w-8" />
           </div>
-
-          {loginError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg mb-4 text-sm flex items-center">
-              <span className="mr-2">⚠️</span>
-              {loginError}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Email</label>
-              <input
-                type="email"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
-                placeholder="your@email.com"
-                onKeyDown={(e) => e.key === 'Enter' && handleLoginSubmit()}
-              />
-            </div>
-
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Password</label>
-              <input
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
-                placeholder="Enter your password"
-                onKeyDown={(e) => e.key === 'Enter' && handleLoginSubmit()}
-              />
-            </div>
-
-
-            <button
-              onClick={handleLoginSubmit}
-              disabled={loggingIn}
-              className="w-full bg-brand-800 text-white px-4 py-3 rounded-lg font-semibold hover:from-brand-900 hover:to-brand-800 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            >
-              {loggingIn ? 'Signing in...' : 'Sign In'}
-            </button>
-
-            <div className="text-center pt-4 border-t border-gray-200">
-              <p className="text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-brand-800 font-semibold hover:text-brand-900">
-                  Create Account
-                </Link>
-              </p>
-            </div>
+          <h2 className="text-3xl text-brand-900 mb-3">Sign in Required</h2>
+          <p className="text-brand-600 font-light text-sm mb-8 leading-relaxed">
+            Please log in to manage your culinary profile, view your personal kitchen recipes, favorites, and orders.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link to="/login" className="btn-primary flex-1 py-3 text-xs uppercase tracking-widest">
+              Sign In
+            </Link>
+            <Link to="/register" className="btn-secondary flex-1 py-3 text-xs uppercase tracking-widest">
+              Create Account
+            </Link>
           </div>
         </div>
       </div>
     );
   }
 
-  // ============================================================================
-  // FILTERING & SEARCH
-  // ============================================================================
+  const user = profileData;
+  const memberDate = user.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : 'October 2026';
 
-  // ✅ WORKING: Filters recipes based on search query and category
-  const filteredRecipes = myRecipes.filter(recipe =>
-    recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (filterType === 'all' || recipe.category.toLowerCase() === filterType.toLowerCase())
-  );
+  const avatarSrc = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'Chef')}&background=c5b497&color=fff&size=200`;
 
-  // ============================================================================
-  // MAIN RENDER
-  // ============================================================================
+  const totalLikes = user.stats?.totalLikes ?? myRecipes.reduce((sum, r) => sum + (r.favorites?.length || 0), 0);
+  const recipesCount = myRecipes.length || user.stats?.recipes || 0;
+  const savedCount = savedRecipes.length || user.stats?.saved || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br  from-orange-50 via-amber-50 to-yellow-50">
-      {/* ========================================================================
-          HEADER - ✅ WORKING
-          ======================================================================== */}
-      <header className="bg-white  shadow-sm border-b border-brand-200 sticky top-0 z-50 backdrop-blur-lg bg-opacity-95">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center ">
-            {/* <div className="flex items-center space-x-8">
-              <h1 className="text-2xl font-bold bg-brand-800 bg-clip-text text-transparent">
-               Recipe Book
-              </h1>
-              <nav className="hidden md:flex space-x-6">
-                <Link to="/" className="text-gray-600 hover:text-primary transition font-medium">Home</Link>
-                <Link to="/explore" className="text-gray-600 hover:text-primary transition font-medium">Explore</Link>
-                <Link to="/community" className="text-gray-600 hover:text-primary transition font-medium">Community</Link>
-              </nav>
-            </div> */}
-
-            <div className="flex items-center space-x-4 md:space-x-8 right-0 justify-end w-full">
-              {/* ✅ WORKING: Notification dropdown toggle */}
-              {/* 🔴 TODO #4: Fetch real notifications from backend */}
-              <div className="relative">
+    <div className="min-h-screen bg-brand-50 pt-28 pb-20">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* PROFILE HEADER CARD */}
+        <div className="bg-white border border-brand-200 shadow-sm p-6 sm:p-10 mb-8 transition-all">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+            
+            {/* Avatar & User Details */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-6 flex-1">
+              <div className="relative group shrink-0">
+                <img
+                  src={avatarSrc}
+                  alt={user.username}
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-brand-300 shadow-sm"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'Chef')}&background=c5b497&color=fff&size=200`;
+                  }}
+                />
                 <button
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 hover:bg-brand-50 rounded-full transition"
+                  onClick={() => setIsEditModalOpen(true)}
+                  aria-label="Edit Profile"
+                  className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow border border-brand-300 text-brand-700 hover:text-primary transition"
+                  title="Change avatar"
                 >
-                  <FaBell className="text-gray-600" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  <PencilSquareIcon className="h-4 w-4" />
                 </button>
-
-                {showNotifications && (
-                  <div className="absolute right-5 top-12 w-80   bg-white rounded-xl shadow-xl border border-gray-100 p-4">
-                    <h3 className="font-bold text-gray-800 mb-3">Notifications</h3>
-                    <div className="space-y-3">
-                      {/* 🔴 TODO: Replace with real notifications */}
-                      {notifications.map((notif, idx) => (
-                        <div key={idx} className="flex items-start space-x-3 p-2 hover:bg-brand-50 rounded-lg transition cursor-pointer">
-                          <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
-                          <div className="flex-1">
-                            <p className="text-sm text-gray-700">{notif.text}</p>
-                            <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* ✅ WORKING: Logout button */}
+              <div className="space-y-2 flex-1">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                  <h1 className="text-3xl sm:text-4xl text-brand-900 font-bold">
+                    {user.username}
+                  </h1>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] tracking-widest font-semibold uppercase bg-brand-100 text-brand-800 border border-brand-200">
+                    <SparklesIcon className="w-3 h-3 text-primary" />
+                    Artisan Chef
+                  </span>
+                </div>
+
+                <p className="text-xs font-medium uppercase tracking-wider text-brand-500">
+                  {user.email} • Member since {memberDate}
+                </p>
+
+                <p className="text-brand-700 font-light text-sm pt-1 max-w-2xl leading-relaxed">
+                  {user.bio || 'Passionate cook and culinary explorer. Sharing delicious recipes and wholesome ingredients.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex sm:flex-row md:flex-col lg:flex-row items-center justify-center gap-3 shrink-0">
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="btn-secondary py-2.5 px-5 text-xs uppercase tracking-wider flex items-center gap-2 w-full sm:w-auto"
+              >
+                <PencilSquareIcon className="h-4 w-4" />
+                Edit Profile
+              </button>
+
+              <Link
+                to="/create"
+                className="btn-primary py-2.5 px-5 text-xs uppercase tracking-wider flex items-center gap-1.5 w-full sm:w-auto text-center"
+              >
+                <PlusIcon className="h-4 w-4 stroke-2" />
+                Add Recipe
+              </Link>
+
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 bg-brand-800 text-white px-4 py-2 rounded-full font-medium hover:shadow-lg transition-all transform hover:scale-105"
+                className="p-2.5 text-brand-500 hover:text-red-600 transition border border-brand-200 hover:border-red-200 hover:bg-red-50"
+                title="Sign Out"
               >
-                <FaSignOutAlt />
-                <span className="hidden md:inline">Logout</span>
+                <ArrowRightOnRectangleIcon className="h-5 w-5" />
               </button>
             </div>
           </div>
-        </div>
-      </header>
 
-      {/* ========================================================================
-          COVER IMAGE & PROFILE SECTION
-          ======================================================================== */}
-      <div className="relative">
-        {/* 🔴 TODO #7: IMPLEMENT COVER IMAGE UPLOAD */}
-        {/* NEEDS IMPLEMENTATION:
-             1. Add file input (hidden)
-             2. Create handleCoverImageUpload function
-             3. Upload to API: POST /api/users/cover-image
-             4. Update user state with new image URL
-        */}
-        <div
-          className="h-72  rounded-t-lg bg-no-repeat bg-cover bg-center relative"
-          style={{ backgroundImage: `url('${user.coverImage}')` }}
-        >
+          {/* STATS STRIP */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-8 border-t border-brand-100">
+            <button 
+              onClick={() => setActiveTab('recipes')}
+              className={`p-4 text-center transition border ${activeTab === 'recipes' ? 'bg-brand-50 border-brand-300' : 'bg-white border-brand-100 hover:bg-brand-50/60'}`}
+            >
+              <span className="block text-2xl sm:text-3xl font-bold text-brand-900">
+                {recipesCount}
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-600">
+                My Recipes
+              </span>
+            </button>
 
-          <div className=" ">
-            {/* 🔴 NOT WORKING: Button has no functionality */}
-            <button className=" absolute left-1 mt-1  bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium hover:bg-white transition flex items-center space-x-2">
-              <FaCamera />
-              <span>Change Cover</span>
+            <button 
+              onClick={() => setActiveTab('saved')}
+              className={`p-4 text-center transition border ${activeTab === 'saved' ? 'bg-brand-50 border-brand-300' : 'bg-white border-brand-100 hover:bg-brand-50/60'}`}
+            >
+              <span className="block text-2xl sm:text-3xl font-bold text-brand-900">
+                {savedCount}
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-600">
+                Saved Recipes
+              </span>
+            </button>
+
+            <div className="p-4 text-center border border-brand-100 bg-white">
+              <span className="block text-2xl sm:text-3xl font-bold text-primary">
+                {totalLikes}
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-600">
+                Total Likes
+              </span>
+            </div>
+
+            <button 
+              onClick={() => setActiveTab('orders')}
+              className={`p-4 text-center transition border ${activeTab === 'orders' ? 'bg-brand-50 border-brand-300' : 'bg-white border-brand-100 hover:bg-brand-50/60'}`}
+            >
+              <span className="block text-2xl sm:text-3xl font-bold text-brand-900">
+                {orders.length}
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-600">
+                Shop Orders
+              </span>
             </button>
           </div>
         </div>
 
-        <div className="container mx-auto px-4">
-          <div className="relative -mt-20 pb-6">
-            <div className="flex flex-col md:flex-row items-center md:items-end space-y-4 md:space-y-0 md:space-x-6">
-
-              {/* 🔴 TODO #6: IMPLEMENT PROFILE IMAGE UPLOAD */}
-              {/* NEEDS IMPLEMENTATION:
-                   1. Create ref for file input: const profileImageInput = useRef(null)
-                   2. Add hidden file input
-                   3. Create handleProfileImageUpload function:
-                      const handleProfileImageUpload = async (e) => {
-                        const file = e.target.files[0];
-                        const formData = new FormData();
-                        formData.append('profileImage', file);
-                        
-                        const token = localStorage.getItem('token');
-                        const response = await fetch('http://localhost:5003/api/users/profile-image', {
-                          method: 'POST',
-                          headers: { 'Authorization': `Bearer ${token}` },
-                          body: formData
-                        });
-                        const data = await response.json();
-                        setUser(prev => ({...prev, profileImage: data.imageUrl}));
-                      }
-                   4. Connect button to trigger file input
-              */}
-              <div className="relative group">
-                <div className="w-40 h-40 rounded-full border-4 border-white bg-gradient-to-br from-brand-800 to-brand-900 shadow-2xl overflow-hidden">
-                  <img
-                    src={user.profileImage}
-                    alt={user.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {/* 🔴 NOT WORKING: Button has no functionality */}
-                <button className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition">
-                  <FaCamera className="text-primary" />
-                </button>
-              </div>
-
-              {/* Profile Info Card */}
-              <div className="flex-1 text-center md:text-left bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-brand-200">
-                <div className="flex flex-col md:flex-row justify-between items-center">
-                  <div>
-                    <div className="flex items-center justify-center md:justify-start space-x-3 mb-2">
-                      {/* ✅ WORKING: Shows user name from auth */}
-                      <h1 className="text-3xl font-bold text-gray-800">{user.name}</h1>
-                      <span className="bg-brand-800 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        PRO CHEF
-                      </span>
-                    </div>
-                    {/* 🔴 TODO: Fetch from backend */}
-                    <p className="text-brand-800 font-medium mb-2">{user.username}</p>
-                    <p className="text-gray-600 whitespace-pre-line max-w-2xl">{user.bio}</p>
-                    <div className="flex items-center justify-center md:justify-start space-x-4 mt-3 text-sm text-gray-500">
-                      <span className="flex items-center"><FaGlobe className="mr-1" /> {user.location}</span>
-                      <span>Joined {user.joinedDate}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2 mt-4 md:mt-0">
-                    {/* 🔴 TODO #5: IMPLEMENT EDIT PROFILE FUNCTIONALITY */}
-                    {/* NEEDS IMPLEMENTATION:
-                         1. Add state: const [showEditModal, setShowEditModal] = useState(false)
-                         2. Add onClick handler: onClick={() => setShowEditModal(true)}
-                         3. Create edit modal/form component
-                         4. Allow editing: name, bio, location, username
-                         5. Create API endpoint: PUT /api/users/profile
-                         6. Update user state after successful edit
-                    */}
-                    {/* 🔴 NOT WORKING: Button has no functionality */}
-                    <button className="bg-brand-800 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105">
-                      Edit Profile
-                    </button>
-                    <button className="bg-white border border-gray-300 px-4 py-2 rounded-full hover:bg-gray-50 transition">
-                      <FaShare className="text-gray-600" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ========================================================================
-                STATS CARDS
-                ======================================================================== */}
-            {/* 🔴 TODO #8: MAKE STATS INTERACTIVE/CLICKABLE */}
-            {/* NEEDS IMPLEMENTATION:
-                 - Followers card: onClick={() => setShowFollowersModal(true)} - show list of followers
-                 - Following card: onClick={() => setShowFollowingModal(true)} - show list of following
-                 - Recipes card: onClick to scroll to recipes section
-                 - Create modals to display followers/following lists
-                 - Fetch lists from API: GET /api/users/followers, /api/users/following
-            */}
-
-            { /* <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-6">
-              {/* ✅ WORKING: Displays count */}
-            {/* 🔴 TODO #3: Calculate from myRecipes.length */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center">
-                <div className="text-3xl font-bold bg-brand-800 bg-clip-text text-transparent">
-                  {user.recipes}
-                </div>
-                <div className="text-gray-600 text-sm mt-1 font-medium">Recipes</div>
-              </div> */}
-
-            {/* 🔴 TODO #8: Add onClick to show followers list */}
-            {/* 🔴 TODO #3: Fetch from backend */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center cursor-pointer">
-                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
-                  {user.followers}
-                </div>
-                <div className="text-gray-600 text-sm mt-1 font-medium">Followers</div>
-              </div> */}
-
-            {/* 🔴 TODO #8: Add onClick to show following list */}
-            {/* 🔴 TODO #3: Fetch from backend */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center cursor-pointer">
-                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
-                  {user.following}
-                </div>
-                <div className="text-gray-600 text-sm mt-1 font-medium">Following</div>
-              </div> */}
-
-            {/* 🔴 TODO #3: Calculate sum of likes from myRecipes */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
-                  {user.totalLikes}
-                </div>
-                <div className="text-gray-600 text-sm mt-1 font-medium">Total Likes</div>
-              </div> */}
-
-            {/* 🔴 TODO #3: Calculate from savedRecipes.length */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
-                  {user.saved}
-                </div>
-                <div className="text-gray-600 text-sm mt-1 font-medium">Saved</div>
-              </div> */}
-
-            {/* 🔴 TODO #3: Fetch from backend based on achievements earned */}
-            {/* <div className="bg-white rounded-xl p-4 shadow-lg border border-brand-200 hover:shadow-xl transition text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
-                  {user.achievements}
-                </div>
-                <div className="text-gray-600 text-sm mt-1 font-medium">Badges</div>
-              </div>
-            </div>   */}
-
-
-
-            {/* ========================================================================
-                ACHIEVEMENTS SECTION - ✅ WORKING (Display only)
-                🔴 TODO: Make dynamic based on actual user achievements from backend
-                ======================================================================== */}
-
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================================
-          TABS NAVIGATION - ✅ WORKING
-          ======================================================================== */}
-      <div className="container mx-auto px-4 mt-6">
-        <div className="bg-white rounded-xl shadow-lg border border-brand-200 p-2 flex flex-wrap gap-2">
-          {/* ✅ WORKING: Tab switching */}
+        {/* TABS NAVIGATION */}
+        <div className="flex border-b border-brand-300 mb-8 bg-white shadow-sm">
           <button
-            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'recipes'
-                ? 'bg-brand-800 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-brand-50'
-              }`}
             onClick={() => setActiveTab('recipes')}
-          >
-            <FaUtensils />
-            <span>My Recipes</span>
-            {/* ✅ WORKING: Shows count of recipes */}
-            <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">{myRecipes.length}</span>
-          </button>
-
-          <button
-            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'saved'
-                ? 'bg-brand-800 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-brand-50'
-              }`}
-            onClick={() => setActiveTab('saved')}
-          >
-            <FaBookmark />
-            <span>Saved</span>
-            <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">{savedRecipes.length}</span>
-          </button>
-
-          <button
-            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'videos'
-                ? 'bg-brand-800 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-brand-50'
-              }`}
-            onClick={() => setActiveTab('videos')}
-          >
-            <FaVideo />
-            <span>Videos</span>
-          </button>
-
-
-
-          {/* <button 
-            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${
-              activeTab === 'analytics' 
-                ? 'bg-brand-800 text-white shadow-lg' 
-                : 'text-gray-600 hover:bg-brand-50'
+            className={`flex items-center gap-2 px-6 py-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === 'recipes'
+                ? 'border-primary text-primary font-bold bg-brand-50/50'
+                : 'border-transparent text-brand-600 hover:text-brand-900'
             }`}
-            onClick={() => setActiveTab('analytics')}
           >
-            <FaChartLine />
-            <span>Analytics</span>
-          </button> */}
+            My Recipes ({myRecipes.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('saved')}
+            className={`flex items-center gap-2 px-6 py-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === 'saved'
+                ? 'border-primary text-primary font-bold bg-brand-50/50'
+                : 'border-transparent text-brand-600 hover:text-brand-900'
+            }`}
+          >
+            Saved Recipes ({savedRecipes.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`flex items-center gap-2 px-6 py-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === 'orders'
+                ? 'border-primary text-primary font-bold bg-brand-50/50'
+                : 'border-transparent text-brand-600 hover:text-brand-900'
+            }`}
+          >
+            Order History {orders.length > 0 && `(${orders.length})`}
+          </button>
         </div>
 
-        {/* ========================================================================
-            CONTENT AREA - TAB CONTENT
-            ======================================================================== */}
-        <div className="mt-6">
-          {/* ====================================================================
-              MY RECIPES TAB
-              ==================================================================== */}
-          {activeTab === 'recipes' && (
-            <div>
-              {/* ✅ WORKING: Search and filter functionality */}
-              <div className="bg-white rounded-xl shadow-lg border border-brand-200 p-4 mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1 relative">
-                    <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search your recipes..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                  >
-                    <option value="all">All Categories</option>
-                    <option value="asian">Asian</option>
-                    <option value="italian">Italian</option>
-                    <option value="healthy">Healthy</option>
-                    <option value="dessert">Dessert</option>
-                    <option value="vegan">Vegan</option>
-                    <option value="baking">Baking</option>
-                  </select>
-                </div>
+        {/* TAB 1: MY RECIPES */}
+        {activeTab === 'recipes' && (
+          <div>
+            {recipesLoading ? (
+              <div className="text-center py-16">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+                <p className="mt-3 text-xs uppercase tracking-widest text-brand-600">Loading your creations...</p>
               </div>
-
-
-              {/* ✅ WORKING: Displays filtered recipes */}
-              {/* 🔴 TODO #1: Replace mock data with real recipes from backend */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredRecipes.map(recipe => (
-                  <div key={recipe.id} className="group bg-white rounded-2xl 
-                shadow-lg overflow-hidden border border-brand-200
-                 hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                    <div className="relative h-56 overflow-hidden">
-
-                      <img
-                        src={recipe.image}
-                        alt={recipe.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-
-                      <div className="absolute top-3 right-3 flex space-x-2">
-                        <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-brand-800">
-                          {recipe.category}
-                        </span>
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
-                          <span className="text-white font-medium flex items-center">
-                            <FaClock className="mr-1" /> {recipe.time}
+            ) : myRecipes.length === 0 ? (
+              <div className="bg-white border border-brand-200 p-12 text-center shadow-sm">
+                <div className="w-14 h-14 mx-auto mb-4 bg-brand-100 rounded-full flex items-center justify-center text-brand-600">
+                  <PlusIcon className="h-7 w-7" />
+                </div>
+                <h3 className="text-2xl text-brand-900 mb-2">No recipes published yet</h3>
+                <p className="text-brand-600 text-sm max-w-md mx-auto mb-6 font-light">
+                  Share your favorite dishes, traditional family treasures, and secret spices with the community.
+                </p>
+                <Link to="/create" className="btn-primary py-2.5 px-6 text-xs uppercase tracking-widest">
+                  Create Your First Recipe
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {myRecipes.map((recipe) => (
+                  <div 
+                    key={recipe._id || recipe.id}
+                    className="group bg-white border border-brand-200 hover:shadow-md transition flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Image */}
+                      <div className="relative h-52 overflow-hidden bg-brand-100">
+                        <img
+                          src={recipe.imageUrl || recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=600&auto=format&fit=crop'}
+                          alt={recipe.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        {recipe.category && (
+                          <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-brand-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border border-brand-200">
+                            {recipe.category}
                           </span>
-                          <div className="flex space-x-2">
-                            {/* 🔴 TODO #9: IMPLEMENT LIKE FUNCTIONALITY */}
-                            {/* NEEDS IMPLEMENTATION:
-                                 const handleLike = async (recipeId) => {
-                                   const token = localStorage.getItem('token');
-                                   await fetch(`http://localhost:5003/api/recipes/${recipeId}/like`, {
-                                     method: 'POST',
-                                     headers: { 
-                                       'Authorization': `Bearer ${token}`,
-                                       'Content-Type': 'application/json'
-                                     }
-                                   });
-                                   // Update local state - increment likes count
-                                   setMyRecipes(prev => prev.map(r => 
-                                     r.id === recipeId ? {...r, likes: r.likes + 1} : r
-                                   ));
-                                 }
-                            */}
-                            {/* 🔴 NOT WORKING: Button has no functionality */}
-                            <button className="bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition">
-                              <FaHeart className="text-red-500" />
-                            </button>
-                            {/* 🔴 TODO #10: IMPLEMENT SHARE FUNCTIONALITY */}
-                            {/* NEEDS IMPLEMENTATION:
-                                 const handleShare = async (recipe) => {
-                                   // Option 1: Copy link to clipboard
-                                   await navigator.clipboard.writeText(`${window.location.origin}/recipe/${recipe.id}`);
-                                   alert('Link copied to clipboard!');
-                                   
-                                   // Option 2: Open share modal with social media options
-                                   setShareRecipe(recipe);
-                                   setShowShareModal(true);
-                                   
-                                   // Option 3: Use Web Share API (mobile-friendly)
-                                   if (navigator.share) {
-                                     await navigator.share({
-                                       title: recipe.title,
-                                       text: recipe.description,
-                                       url: `${window.location.origin}/recipe/${recipe.id}`
-                                     });
-                                   }
-                                 }
-                            */}
-                            {/* 🔴 NOT WORKING: Button has no functionality */}
-                            <button className="bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition">
-                              <FaShare className="text-gray-600" />
-                            </button>
-                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        <Link to={`/recipes/${recipe._id || recipe.id}`}>
+                          <h3 className="text-xl text-brand-900 group-hover:text-primary transition-colors line-clamp-1 mb-2">
+                            {recipe.title}
+                          </h3>
+                        </Link>
+
+                        <p className="text-brand-600 text-xs font-light line-clamp-2 mb-4">
+                          {recipe.description || 'A delicious home-cooked recipe prepared with fresh ingredients.'}
+                        </p>
+
+                        <div className="flex items-center gap-4 text-xs text-brand-500 uppercase tracking-wider font-medium">
+                          <span className="flex items-center gap-1">
+                            <ClockIcon className="h-4 w-4 text-brand-400" />
+                            {(recipe.prepTime || 0) + (recipe.cookTime || 0)} min
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <UserGroupIcon className="h-4 w-4 text-brand-400" />
+                            {recipe.servings || 1} serv
+                          </span>
+                          <span className="flex items-center gap-1 text-red-600">
+                            <HeartSolid className="h-4 w-4 text-red-500" />
+                            {recipe.favorites?.length || 0}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-5">
+                    {/* Footer Actions */}
+                    <div className="p-4 pt-3 border-t border-brand-100 flex items-center justify-between bg-brand-50/40">
+                      <Link
+                        to={`/recipes/${recipe._id || recipe.id}`}
+                        className="text-xs font-semibold uppercase tracking-wider text-brand-800 hover:text-primary transition"
+                      >
+                        View Details →
+                      </Link>
 
-                      <h3 className="font-bold text-xl mb-2 text-gray-800 group-hover:text-brand-800 transition">
-
-                        {recipe.title}
-
-                      </h3>
-
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{recipe.description}</p>
-
-                      <div className="flex items-center justify-between text-sm border-t border-gray-100 pt-4">
-                        <div className="flex items-center space-x-4">
-                          <span className="flex items-center text-gray-500">
-
-                            <FaHeart className="mr-1 text-red-500" /> {recipe.likes}
-                          </span>
-
-                          <span className="flex items-center text-gray-500">
-                            <FaComments className="mr-1 text-blue-500" /> {recipe.comments}
-                          </span>
-
-                        </div>
-
-                        <div className="flex items-center space-x-1">
-                          <FaStar className="text-yellow-500" />
-                          <span className="font-bold text-gray-700">{recipe.rating}</span>
-
-                        </div>
-
-                      </div>
-
-                      <div className="flex items-center justify-between mt-4">
-                        <span className="text-xs bg-brand-50 text-brand-800 px-3 py-1 rounded-full font-medium">
-                          {recipe.calories} cal
-                        </span>
-                        {/* 🔴 TODO: Add onClick to navigate to recipe detail page */}
-                        <button className="text-brand-800 font-semibold text-sm hover:text-brand-900 transition">
-                          View Recipe →
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/recipes/${recipe._id || recipe.id}/edit`}
+                          className="p-1.5 text-brand-600 hover:text-primary transition"
+                          title="Edit Recipe"
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteRecipe(recipe._id || recipe.id)}
+                          className="p-1.5 text-brand-400 hover:text-red-600 transition"
+                          title="Delete Recipe"
+                        >
+                          <TrashIcon className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
 
-                {/* ✅ WORKING: Link to create recipe page */}
-                <Link
-                  to="/create"
-                  className="bg-brand-100 rounded-2xl border-2 border-dashed border-brand-400 flex items-center justify-center min-h-[400px] flex-col p-8 text-center cursor-pointer hover:from-orange-100 hover:to-amber-100 transition-all transform hover:scale-105 group"
-                >
-                  <div className="w-20 h-20 rounded-full bg-brand-800 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform shadow-lg">
-                    <FaUtensils className="text-3xl" />
-                  </div>
-                  <h3 className="font-bold text-2xl mb-2 text-gray-800">Create New Recipe</h3>
-                  <p className="text-gray-600">Share your culinary masterpiece with the world</p>
+        {/* TAB 2: SAVED RECIPES */}
+        {activeTab === 'saved' && (
+          <div>
+            {savedLoading ? (
+              <div className="text-center py-16">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+                <p className="mt-3 text-xs uppercase tracking-widest text-brand-600">Loading your favorites...</p>
+              </div>
+            ) : savedRecipes.length === 0 ? (
+              <div className="bg-white border border-brand-200 p-12 text-center shadow-sm">
+                <div className="w-14 h-14 mx-auto mb-4 bg-brand-100 rounded-full flex items-center justify-center text-primary">
+                  <BookmarkIcon className="h-7 w-7" />
+                </div>
+                <h3 className="text-2xl text-brand-900 mb-2">No saved recipes</h3>
+                <p className="text-brand-600 text-sm max-w-md mx-auto mb-6 font-light">
+                  Browse community creations and tap the heart icon to curate your personal collection of culinary inspirations.
+                </p>
+                <Link to="/home" className="btn-primary py-2.5 px-6 text-xs uppercase tracking-widest">
+                  Explore Recipes
                 </Link>
               </div>
-            </div>
-          )}
-
-          {/* ====================================================================
-              SAVED RECIPES TAB
-              ==================================================================== */}
-          {/* 🔴 TODO #2: Replace mock data with real saved recipes from backend */}
-          {activeTab === 'saved' && (
-            <div>
-              {savedRecipes.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {savedRecipes.map(recipe => (
-                    <div key={recipe.id} className="group bg-white rounded-2xl shadow-lg overflow-hidden border border-brand-200 hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                      <div className="relative h-56 overflow-hidden">
-                        <img
-                          src={recipe.image}
-                          alt={recipe.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        {/* 🔴 TODO #11: IMPLEMENT UNSAVE FUNCTIONALITY */}
-                        {/* NEEDS IMPLEMENTATION:
-                             const handleUnsave = async (recipeId) => {
-                               const token = localStorage.getItem('token');
-                               await fetch(`http://localhost:5003/api/recipes/${recipeId}/unsave`, {
-                                 method: 'DELETE',
-                                 headers: { 'Authorization': `Bearer ${token}` }
-                               });
-                               // Remove from local state
-                               setSavedRecipes(prev => prev.filter(r => r.id !== recipeId));
-                             }
-                        */}
-                        {/* 🔴 NOT WORKING: Button has no functionality */}
-                        <button className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-3 rounded-full hover:bg-white transition shadow-lg">
-                          <FaBookmark className="text-primary" />
-                        </button>
-                      </div>
-
-                      <div className="p-5">
-                        <h3 className="font-bold text-xl mb-1 text-gray-800">{recipe.title}</h3>
-                        <p className="text-sm text-gray-500 mb-4">by {recipe.author}</p>
-
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="flex items-center text-gray-500">
-                            <FaClock className="mr-1" /> {recipe.time}
-                          </span>
-                          <div className="flex items-center space-x-1">
-                            <FaStar className="text-yellow-500" />
-                            <span className="font-bold text-gray-700">{recipe.rating}</span>
-                          </div>
-                        </div>
-
-                        {/* 🔴 TODO: Add onClick to navigate to recipe detail page */}
-                        <button className="w-full mt-4 bg-brand-800 text-white py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
-                          View Recipe
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-
-
-                // ✅ WORKING: Empty state display
-                <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-brand-200">
-                  <FaBookmark className="text-6xl text-brand-400 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">No Saved Recipes Yet</h3>
-                  <p className="text-gray-600 mb-6">Start exploring and save recipes you love!</p>
-                  <Link
-                    to="/explore"
-                    className="inline-block bg-brand-800 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105"
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {savedRecipes.map((recipe) => (
+                  <div
+                    key={recipe._id || recipe.id}
+                    className="group bg-white border border-brand-200 hover:shadow-md transition flex flex-col justify-between"
                   >
-                    Explore Recipes
-                  </Link>
-
-                </div>
-
-              )}
-            </div>
-          )}
-
-          {/* ====================================================================
-              VIDEOS TAB
-              ==================================================================== */}
-          {/* 🔴 TODO #12: IMPLEMENT VIDEO RECIPES FEATURE */}
-          {/* NEEDS IMPLEMENTATION:
-               1. Create video upload functionality
-               2. Store videos (use cloud storage like AWS S3, Cloudinary)
-               3. Create API endpoints for video CRUD operations
-               4. Display user's video recipes
-               5. Add video player component
-          */}
-
-          {activeTab === 'videos' && (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-brand-200">
-              <FaVideo className="text-6xl text-brand-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Video Recipes Coming Soon!</h3>
-              <p className="text-gray-600 mb-6">Share your cooking process with video tutorials</p>
-              {/* 🔴 NOT WORKING: Button has no functionality */}
-              <button className="bg-brand-800 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all transform hover:scale-105">
-                Upload Your First Video
-              </button>
-            </div>
-          )}
-
-          {/* ====================================================================
-              ANALYTICS TAB
-              ==================================================================== */}
-          {/* 🔴 TODO #13: IMPLEMENT ANALYTICS FEATURE */}
-          {/* NEEDS IMPLEMENTATION:
-               1. Track recipe views, likes, comments in database
-               2. Create API endpoint: GET /api/analytics
-               3. Fetch real analytics data:
-                  - Total views over time
-                  - Engagement rate calculation
-                  - Follower growth rate
-                  - Top performing recipes
-                  - Demographics (if available)
-               4. Add charts using a library like recharts or chart.js
-               5. Add date range filters
-          */}
-
-          {activeTab === 'analytics' && (
-            <div className="space-y-6">
-              {/* 🔴 TODO: Replace with real analytics data */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-800">Total Views</h3>
-                    <FaChartLine className="text-blue-500 text-2xl" />
-                  </div>
-                  {/* 🔴 HARDCODED: Should calculate from real data */}
-                  <p className="text-4xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
-                    47.3K
-                  </p>
-                  <p className="text-sm text-green-600 mt-2">↑ 12.5% from last month</p>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-800">Engagement Rate</h3>
-                    <FaHeart className="text-red-500 text-2xl" />
-                  </div>
-                  {/* 🔴 HARDCODED: Should calculate from real data */}
-                  <p className="text-4xl font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
-                    8.7%
-                  </p>
-                  <p className="text-sm text-green-600 mt-2">↑ 3.2% from last month</p>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-800">New Followers</h3>
-                    <FaUsers className="text-purple-500 text-2xl" />
-                  </div>
-                  {/* 🔴 HARDCODED: Should calculate from real data */}
-                  <p className="text-4xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
-                    +234
-                  </p>
-                  <p className="text-sm text-green-600 mt-2">↑ 18% from last month</p>
-                </div>
-              </div>
-
-              {/* 🔴 TODO: Calculate top performing recipes from real data */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-200">
-                <h3 className="font-bold text-gray-800 mb-4">Top Performing Recipes</h3>
-                <div className="space-y-4">
-                  {myRecipes.slice(0, 3).map((recipe, idx) => (
-                    <div key={recipe.id} className="flex items-center space-x-4 p-4 bg-brand-50 rounded-xl">
-                      <div className="text-2xl font-bold text-primary">#{idx + 1}</div>
-                      <img src={recipe.image} alt={recipe.title} className="w-16 h-16 rounded-lg object-cover" />
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-800">{recipe.title}</h4>
-                        <p className="text-sm text-gray-600">{recipe.views} views · {recipe.likes} likes</p>
+                    <div>
+                      {/* Image & Unsave button */}
+                      <div className="relative h-52 overflow-hidden bg-brand-100">
+                        <img
+                          src={recipe.imageUrl || recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=600&auto=format&fit=crop'}
+                          alt={recipe.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <button
+                          onClick={() => handleUnsave(recipe._id || recipe.id)}
+                          className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white rounded-full text-red-600 shadow transition"
+                          title="Remove from saved"
+                        >
+                          <HeartSolid className="h-4 w-4" />
+                        </button>
+                        {recipe.category && (
+                          <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-brand-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border border-brand-200">
+                            {recipe.category}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <div className="flex items-center space-x-1">
-                          <FaStar className="text-yellow-500" />
-                          <span className="font-bold text-gray-700">{recipe.rating}</span>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        <Link to={`/recipes/${recipe._id || recipe.id}`}>
+                          <h3 className="text-xl text-brand-900 group-hover:text-primary transition-colors line-clamp-1 mb-1">
+                            {recipe.title}
+                          </h3>
+                        </Link>
+                        <p className="text-[11px] uppercase tracking-wider font-medium text-brand-500 mb-3">
+                          By {recipe.author?.username || 'Artisan Chef'}
+                        </p>
+                        <p className="text-brand-600 text-xs font-light line-clamp-2 mb-4">
+                          {recipe.description || 'Authentic dish prepared with fresh seasonal ingredients.'}
+                        </p>
+
+                        <div className="flex items-center gap-4 text-xs text-brand-500 uppercase tracking-wider font-medium">
+                          <span className="flex items-center gap-1">
+                            <ClockIcon className="h-4 w-4 text-brand-400" />
+                            {(recipe.prepTime || 0) + (recipe.cookTime || 0)} min
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <UserGroupIcon className="h-4 w-4 text-brand-400" />
+                            {recipe.servings || 1} serv
+                          </span>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    <div className="p-4 pt-3 border-t border-brand-100 flex items-center justify-between bg-brand-50/40">
+                      <Link
+                        to={`/recipes/${recipe._id || recipe.id}`}
+                        className="btn-secondary py-1.5 px-4 text-[11px] uppercase tracking-wider w-full text-center"
+                      >
+                        View Full Recipe
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: ORDER HISTORY */}
+        {activeTab === 'orders' && (
+          <div>
+            {ordersLoading ? (
+              <div className="text-center py-16">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+                <p className="mt-3 text-xs uppercase tracking-widest text-brand-600">Retrieving order records...</p>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="bg-white border border-brand-200 p-12 text-center shadow-sm">
+                <div className="w-14 h-14 mx-auto mb-4 bg-brand-100 rounded-full flex items-center justify-center text-brand-700">
+                  <ShoppingBagIcon className="h-7 w-7" />
+                </div>
+                <h3 className="text-2xl text-brand-900 mb-2">No orders placed yet</h3>
+                <p className="text-brand-600 text-sm max-w-md mx-auto mb-6 font-light">
+                  Order organic, zero-chemical pantry staples, heritage grains, and cold-pressed oils from our Organicwill shop.
+                </p>
+                <Link to="/organicwill" className="btn-primary py-2.5 px-6 text-xs uppercase tracking-widest">
+                  Visit Organicwill Shop
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {orders.map((order) => {
+                  const orderDate = new Date(order.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                  const shortId = (order._id || '').slice(-8).toUpperCase();
+
+                  return (
+                    <div
+                      key={order._id}
+                      className="bg-white border border-brand-200 p-6 shadow-sm flex flex-col md:flex-row justify-between gap-6"
+                    >
+                      {/* Left: Info & Items */}
+                      <div className="flex-1 space-y-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="text-lg font-bold text-brand-900">
+                            Order #{shortId}
+                          </span>
+                          <span className="text-xs text-brand-500 uppercase tracking-wider">
+                            {orderDate}
+                          </span>
+                          <span className={`text-[10px] uppercase tracking-widest px-2.5 py-0.5 font-bold rounded-full ${
+                            order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                            order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
+                            order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                            'bg-amber-100 text-amber-800'
+                          }`}>
+                            {order.status || 'Processing'}
+                          </span>
+                        </div>
+
+                        {/* Items List */}
+                        <div className="border-l-2 border-brand-200 pl-4 space-y-1.5">
+                          {order.items?.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-sm text-brand-800 max-w-md">
+                              <span>
+                                {item.name} <span className="text-brand-500 font-normal">x{item.quantity}</span>
+                              </span>
+                              <span className="font-semibold">
+                                ${(Number(item.price) * Number(item.quantity)).toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Delivery Details */}
+                        {order.deliveryDetails && (
+                          <div className="text-xs text-brand-600 font-light space-y-0.5 pt-1">
+                            <p><strong className="font-semibold text-brand-800">Address:</strong> {order.deliveryDetails.address}</p>
+                            <p><strong className="font-semibold text-brand-800">Phone:</strong> {order.deliveryDetails.phone}</p>
+                            {order.deliveryDetails.notes && (
+                              <p><strong className="font-semibold text-brand-800">Notes:</strong> "{order.deliveryDetails.notes}"</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: Total Price */}
+                      <div className="flex flex-col justify-between items-start md:items-end md:text-right border-t md:border-t-0 md:border-l border-brand-100 pt-4 md:pt-0 md:pl-6 shrink-0 min-w-[140px]">
+                        <div>
+                          <span className="text-[10px] text-brand-500 uppercase tracking-widest font-semibold block">
+                            Total Price
+                          </span>
+                          <span className="text-2xl font-bold text-brand-900">
+                            ${Number(order.totalPrice || 0).toFixed(2)}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-medium text-brand-600 bg-brand-50 px-2.5 py-1 border border-brand-200 mt-3 inline-block">
+                          Cash on Delivery
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
 
-      {/* ========================================================================
-          FOOTER - ✅ WORKING (Static display)
-          ======================================================================== */}
-      <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-white mt-20 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-brand-800 to-brand-900 bg-clip-text text-transparent mb-4">
-                Recipe Book
-              </h3>
-              <p className="text-gray-400 mb-4">
-                Join millions of food lovers sharing recipes and culinary inspiration worldwide.
-              </p>
-              <div className="flex space-x-3">
-                {/* 🔴 TODO: Add actual social media links */}
-                <button className="bg-white/10 p-3 rounded-full hover:bg-white/20 transition">
-                  <FaFacebook className="text-xl" />
-                </button>
-                <button className="bg-white/10 p-3 rounded-full hover:bg-white/20 transition">
-                  <FaInstagram className="text-xl" />
-                </button>
-                <button className="bg-white/10 p-3 rounded-full hover:bg-white/20 transition">
-                  <FaPinterest className="text-xl" />
-                </button>
-              </div>
-            </div>
+      {/* EDIT PROFILE MODAL */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white border border-brand-300 w-full max-w-lg p-6 sm:p-8 shadow-xl relative animate-slide-up">
+            
+            <button
+              onClick={() => setIsEditModalOpen(false)}
+              className="absolute top-5 right-5 text-brand-400 hover:text-brand-800 transition"
+              title="Close"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
 
-            <div>
-              <h4 className="text-lg font-bold mb-4">Explore</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-brand-500 transition">Trending Recipes</a></li>
-                <li><a href="#" className="hover:text-brand-500 transition">Popular Chefs</a></li>
-                <li><a href="#" className="hover:text-brand-500 transition">Recipe Collections</a></li>
-                <li><a href="#" className="hover:text-brand-500 transition">Cooking Videos</a></li>
-              </ul>
-            </div>
+            <h2 className="text-2xl sm:text-3xl text-brand-900 mb-2 font-bold">
+              Edit Culinary Profile
+            </h2>
+            <p className="text-brand-600 text-xs font-light uppercase tracking-wider mb-6">
+              Update your public display name, biography, and avatar.
+            </p>
 
-            <div>
-              <h4 className="text-lg font-bold mb-4">Resources</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-brand-500 transition">Cooking Tips</a></li>
-                <li><a href="#" className="hover:text-brand-500 transition">Meal Planning</a></li>
-                <li><a href="#" className="hover:text-brand-500 transition">Nutrition Guide</a></li>
-                <li><a href="#" className="hover:text-brand-500 transition">FAQ</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-lg font-bold mb-4">Stay Updated</h4>
-              <p className="text-gray-400 mb-4">Get weekly recipes & cooking tips!</p>
-              <div className="flex">
-
-                {/* 🔴 TODO #14: IMPLEMENT NEWSLETTER SUBSCRIPTION */}
-                {/* NEEDS IMPLEMENTATION:
-                     1. Add email state
-                     2. Create API endpoint: POST /api/newsletter/subscribe
-                     3. Add form validation
-                     4. Show success/error message
-                */}
+            <form onSubmit={handleSaveProfile} className="space-y-5">
+              
+              {/* Username */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-700 mb-1.5">
+                  Display Name / Username
+                </label>
                 <input
-                  type="email"
-                  placeholder="Your email"
-                  className="flex-1 px-4 py-2 rounded-l-lg bg-white/10 border border-white/20 focus:outline-none focus:border-primary text-white placeholder-gray-400"
+                  type="text"
+                  value={editForm.username}
+                  onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                  className="input-field"
+                  placeholder="e.g. MasterChef"
+                  required
                 />
-                {/* 🔴 NOT WORKING: Button has no functionality */}
-                <button className="bg-brand-800 px-6 py-2 rounded-r-lg font-semibold hover:shadow-lg transition">
-                  Join
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-700 mb-1.5">
+                  Bio
+                </label>
+                <textarea
+                  rows={3}
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                  className="input-field resize-none"
+                  placeholder="Tell fellow foodies about your cooking style, favorite cuisines..."
+                />
+              </div>
+
+              {/* Avatar URL or Preset */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-700 mb-1.5">
+                  Avatar Image URL
+                </label>
+                <input
+                  type="url"
+                  value={editForm.avatar}
+                  onChange={(e) => setEditForm({ ...editForm, avatar: e.target.value })}
+                  className="input-field"
+                  placeholder="https://example.com/avatar.jpg"
+                />
+
+                {/* Quick Presets */}
+                <div className="mt-3">
+                  <span className="text-[11px] text-brand-500 uppercase tracking-widest font-semibold block mb-2">
+                    Or select an artisan avatar:
+                  </span>
+                  <div className="flex gap-2">
+                    {AVATAR_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, avatar: preset })}
+                        className={`relative w-10 h-10 rounded-full overflow-hidden border-2 transition ${
+                          editForm.avatar === preset ? 'border-primary ring-2 ring-primary/30' : 'border-brand-200 hover:border-brand-400'
+                        }`}
+                      >
+                        <img src={preset} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
+                        {editForm.avatar === preset && (
+                          <div className="absolute inset-0 bg-primary/40 flex items-center justify-center text-white">
+                            <CheckIcon className="w-4 h-4 stroke-2" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-brand-200">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  disabled={savingProfile}
+                  className="btn-secondary py-2.5 px-5 text-xs uppercase tracking-wider"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="btn-primary py-2.5 px-6 text-xs uppercase tracking-wider"
+                >
+                  {savingProfile ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
-            </div>
-          </div>
 
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2024 Recipe Book. Made with ❤️ for food lovers worldwide.</p>
+            </form>
           </div>
         </div>
-      </footer>
+      )}
+
     </div>
   );
 };
 
 export default ProfilePage;
-
-/* ============================================================================
-   SUMMARY OF ALL TODOS AND NON-WORKING FEATURES
-   ============================================================================
-
-   ✅ WORKING FEATURES:
-   - User authentication check
-   - Login/logout functionality
-   - Tab navigation
-   - Search and filter recipes
-   - Responsive UI components
-   - Loading and error states
-
-   🔴 TODO #1: Fetch user's recipes from backend (Lines ~60-145)
-   🔴 TODO #2: Fetch saved recipes from backend (Lines ~148-166)
-   🔴 TODO #3: Update user stats dynamically (Lines ~39-58)
-   🔴 TODO #4: Fetch notifications from backend (Lines ~174-186)
-   🔴 TODO #5: Implement edit profile functionality (Line ~456)
-   🔴 TODO #6: Implement profile image upload (Lines ~437-450)
-   🔴 TODO #7: Implement cover image upload (Lines ~428-433)
-   🔴 TODO #8: Make stats interactive/clickable (Lines ~481-526)
-   🔴 TODO #9: Implement like functionality on recipes (Line ~635)
-   🔴 TODO #10: Implement share functionality (Line ~663)
-   🔴 TODO #11: Implement unsave functionality (Line ~762)
-   🔴 TODO #12: Implement video recipes feature (Lines ~817-827)
-   */
